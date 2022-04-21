@@ -235,6 +235,22 @@ AK8TaggerWP = {
             'btagDDCvLV2' : {
                 'H' : (0.45, 1)
             },
+        },
+        '2017' : {
+            'btagDDBvLV2' : {
+                'H' : (0.64, 1)
+            },
+            'btagDDCvLV2' : {
+                'H' : (0.45, 1)
+            },
+        },
+        '2018' : {
+            'btagDDBvLV2' : {
+                'H' : (0.64, 1)
+            },
+            'btagDDCvLV2' : {
+                'H' : (0.45, 1)
+            },
         }
     },
     # 2016 UL WPs are copied from 2017 since they have not been computed yet
