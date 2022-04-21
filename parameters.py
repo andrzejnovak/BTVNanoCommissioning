@@ -425,7 +425,9 @@ fit_extra_args = {
                     'M': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --cminDefaultMinimizerAlgo Simplex',
                 },
                 'M' : {},
-                'H' : {},
+                'H' : {
+                    'H': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND',
+                },
             },
             'particleNetMD_Xbb': {
                 'L' : {},
@@ -891,7 +893,7 @@ fit_parameters = {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
-                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}}, # No post-fit uncertainties
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
             },
