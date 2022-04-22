@@ -1,6 +1,6 @@
 cfg =  {
     # Dataset parameters
-    "dataset"  : "datasets/DAS/datasets_btag2017UL.txt",
+    "dataset"  : "datasets/DAS/RunIISummer20UL17.txt",
     "json"     : "datasets/RunIISummer20UL17.json",
     "storage_prefix" : "/pnfs/psi.ch/cms/trivcat/store/user/mmarcheg/BTVNanoCommissioning",
     "campaign" : "UL",
