@@ -8,7 +8,7 @@ cfg =  {
 
     # PU files
     "puFile"   : "correction_files/UltraLegacy/PileupHistogram-goldenJSON-13tev-2017-69200ub-99bins.root",
-    "nTrueFile": "correction_files/nTrueInt_RunIISummer20UL17_FIXED_SV_local_2017.coffea",
+    "nTrueFile": "correction_files/nTrueInt_RunIISummer20UL17_local_2017.coffea",
 
     # JEC
     "JECfolder": "correction_files/tmp",
