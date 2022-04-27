@@ -414,6 +414,30 @@ flavor_opts = {
 
 fit_extra_args = {
     'fixbkg_mergeMH' : {
+        '2016': {
+            'btagDDBvLV2': {
+                'L' : {},
+                'M' : {},
+                'H' : {},
+            },
+            'btagDDCvLV2': {
+                'L' : {
+                    'M': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND',
+                },
+                'M' : {},
+                'H' : {},
+            },
+            'particleNetMD_Xbb': {
+                'L' : {},
+                'M' : {},
+                'H' : {},
+            },
+            'particleNetMD_Xcc': {
+                'L' : {},
+                'M' : {},
+                'H' : {},
+            }
+        },
         '2017': {
             'btagDDBvLV2': {
                 'L' : {},
@@ -422,16 +446,44 @@ fit_extra_args = {
             },
             'btagDDCvLV2': {
                 'L' : {
-                    'M': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --cminDefaultMinimizerAlgo Simplex',
+                    #'M': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --cminDefaultMinimizerAlgo Simplex',
                 },
                 'M' : {},
                 'H' : {
-                    'H': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND',
+                    #'H': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND',
                 },
             },
             'particleNetMD_Xbb': {
                 'L' : {},
                 'M' : {},
+                'H' : {},
+            },
+            'particleNetMD_Xcc': {
+                'L' : {},
+                'M' : {},
+                'H' : {},
+            },
+        },
+        '2018': {
+            'btagDDBvLV2': {
+                'L' : {},
+                'M' : {},
+                'H' : {},
+            },
+            'btagDDCvLV2': {
+                'L' : {
+                    #'M': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --cminDefaultMinimizerAlgo Simplex',
+                },
+                'M' : {},
+                'H' : {
+                    #'H': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND',
+                },
+            },
+            'particleNetMD_Xbb': {
+                'L' : {},
+                'M' : {
+                    'L': '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --cminDefaultMinimizerAlgo Simplex',
+                },
                 'H' : {},
             },
             'particleNetMD_Xcc': {
@@ -784,7 +836,7 @@ fit_parameters = {
                 'L' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
@@ -813,7 +865,7 @@ fit_parameters = {
                 },
                 'M' : {
                     'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 100}},
                     'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
@@ -863,7 +915,7 @@ fit_parameters = {
                     'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'H' : {
@@ -878,14 +930,14 @@ fit_parameters = {
                 'L' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'M' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
@@ -893,30 +945,30 @@ fit_parameters = {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
-                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}}, # No post-fit uncertainties
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
             },
             'particleNetMD_Xbb': {
                 'L' : {
                     'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 10000}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}}, # No post-fit uncertainties
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'M' : {
-                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}}, # No post-fit uncertainties
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
+                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                 },
                 'H' : {
-                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}}, # No post-fit uncertainties
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}}, # No post-fit uncertainties
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
+                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
                 },
             },
@@ -937,8 +989,8 @@ fit_parameters = {
                 },
                 'H' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'L':         {'c_cc': {'value' : 1, 'lo' : 0.2, 'hi' : 20}}, # No post-fit uncertainties
-                    'M':         {'c_cc': {'value' : 1, 'lo' : 0.2, 'hi' : 20}},
+                    'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}}, # No post-fit uncertainties
+                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
@@ -957,7 +1009,7 @@ fit_parameters = {
                     'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'H' : {
@@ -972,7 +1024,7 @@ fit_parameters = {
                 'L' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
@@ -994,23 +1046,23 @@ fit_parameters = {
             'particleNetMD_Xbb': {
                 'L' : {
                     'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 10000}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'M' : {
-                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 100}},
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 100}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
+                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'H' : {
-                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
-                    'L':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
-                    'M':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 2}},
-                    'H':         {'b_bb': {'value' : 1, 'lo' : 0.5, 'hi' : 20}},
+                    'Inclusive': {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'L':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
             },
@@ -1025,14 +1077,14 @@ fit_parameters = {
                 'M' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
                 'H' : {
                     'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                    'L':         {'c_cc': {'value' : 1, 'lo' : 0.2, 'hi' : 20}},
-                    'M':         {'c_cc': {'value' : 1, 'lo' : 0.2, 'hi' : 20}},
+                    'L':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                    'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                     'M+H':       {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
