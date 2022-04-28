@@ -196,10 +196,10 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             
             if isSignal:
                 sample.autoMCStats(epsilon=args.epsilon)
-            #    fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
-            #    sample.setParamEffect(fracX, 1.2*template[0])
-            #else:
-            #    sample.autoMCStats(lnN=True)
+                fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
+                sample.setParamEffect(fracX, effect_up=1.2, effect_down=0.8)
+            else:
+                sample.autoMCStats(lnN=True)
             ch.addSample(sample)
 
         if wpt == 'Inclusive':

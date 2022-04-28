@@ -71,13 +71,21 @@ for ivar in [ 'fatjet_jetproba', 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                             continue
                             raise NotImplementedError
                         else:
-                            h = accumulator[histname_coffea]                            
+                            h          = accumulator[histname_coffea]
+                            h_fail     = accumulator[histname_coffea.replace(f'{isel}{tagger}pass', f'{isel}{tagger}fail')].copy()
+                            h_passfail = accumulator[f'{ivar}_{isel}'].copy()
                         h.scale( scaleXS, axis='dataset' )
+                        h_fail.scale( scaleXS, axis='dataset' )
+                        h_passfail.scale( scaleXS, axis='dataset' )
                         if (args.scaleFail != None) & (passfail == 'fail'):
                             print(f"Scaling fail distributions by a factor {args.scaleFail}")
                             #h.scale( args.scaleFail, axis='dataset' )
                             h.scale( args.scaleFail )
-                        h = h.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
+                            h_fail.scale( args.scaleFail )
+                            h_passfail.scale( args.scaleFail )
+                        h          = h.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
+                        h_fail     = h_fail.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
+                        h_passfail = h_passfail.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
 
                         ##### grouping flavor
                         flavors = [str(s) for s in h.axis('flavor').identifiers() if str(s) != 'flavor']
@@ -90,7 +98,9 @@ for ivar in [ 'fatjet_jetproba', 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                         else:
                             mapping_flavor['b_bb'] = ['b', 'bb']
                             mapping_flavor['c_cc'] = ['c', 'cc']
-                        h = h.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                        h          = h.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                        h_fail     = h_fail.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                        h_passfail = h_passfail.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
 
                         ##### grouping data and QCD histos
                         datasets = [str(s) for s in h.axis('dataset').identifiers() if str(s) != 'dataset']
@@ -102,13 +112,20 @@ for ivar in [ 'fatjet_jetproba', 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                         datasets_data  = [dataset for dataset in datasets if args.data in dataset]
                         datasets_QCD = [dataset for dataset in datasets if ((args.data not in dataset) & ('GluGlu' not in dataset))]
                         
-                        h = h.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
+                        h          = h.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
+                        h_fail     = h_fail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
+                        h_passfail = h_passfail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
 
                         #### rescaling QCD to data
-                        dataSum = np.sum( h[args.data].sum('flavor').values()[('BTagMu',)] )
-                        QCDSum = np.sum( h[datasets_QCD].sum('dataset', 'flavor').values()[()] )
+                        #print(h_passfail.values())
+                        dataSum = np.sum( h_fail[args.data].sum('flavor').values()[('BTagMu',)] )
+                        QCDSum = np.sum( h_fail[datasets_QCD].sum('dataset', 'flavor').values()[()] )
                         QCD_rescaled = h[datasets_QCD].sum('dataset')
                         QCD_rescaled.scale( dataSum/QCDSum )
+
+                        wrong_factor = np.sum( h[args.data].sum('flavor').values()[('BTagMu',)] ) / np.sum( h[datasets_QCD].sum('dataset', 'flavor').values()[()] )
+                        print(histname_coffea)
+                        print("correct =", dataSum/QCDSum, "wrong =", wrong_factor, "ratio =", dataSum/QCDSum/wrong_factor)
 
                         #### storing into dict
                         for iflav in QCD_rescaled.values():
