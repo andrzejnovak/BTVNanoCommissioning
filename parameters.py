@@ -12,7 +12,6 @@ lumi = {
         '2017' : 41.48,
         '2018' : 59.83,
     }
-    
 }
 
 # Cross-sections in pb
