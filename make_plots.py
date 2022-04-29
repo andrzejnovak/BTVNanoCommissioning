@@ -19,13 +19,18 @@ parser.add_argument('-o', '--output', type=str, help='Output directory', require
 parser.add_argument('--outputDir', type=str, default=None, help='Output directory')
 parser.add_argument('-s', '--scale', type=str, default='linear', help='Plot y-axis scale', required=False)
 parser.add_argument('-d', '--dense', action='store_true', help='Normalized plots')
+parser.add_argument('--campaign', type=str, choices={'EOY', 'UL'}, help='Dataset campaign.', required=True)
 parser.add_argument('--year', type=str, choices=['2016', '2017', '2018'], help='Year of data/MC samples', required=True)
+parser.add_argument('--vfp', type=str, default=None, choices=['pre', 'post'], help='Year of data/MC samples', required=False)
 parser.add_argument('--hist2d', action='store_true', help='Plot only 2D histograms')
 parser.add_argument('--test', action='store_true', default=False, help='Test with lower stats.')
 parser.add_argument('--data', type=str, default='BTagMu', help='Data sample name')
 parser.add_argument('--selection', type=str, default='all', help='Plot only plots with this selection. ("all" to plot all the selections in file)')
 
 args = parser.parse_args()
+
+if (args.year == '2016') & (args.vfp == parser.get_default('vfp')):
+    sys.exit("For 2016UL, specify if 'pre' or 'post' VFP.")
 
 print("Starting ", end='')
 print(time.ctime())
@@ -106,7 +111,7 @@ selection_msd100tau06 = (r"$\geq$1 AK8 jets"+"\n"+
                   r"$\geq$2 $\mu$-tagged AK4 subjets"+"\n")
 """
 
-totalLumi = 'TEST' if args.test else lumi[args.year]
+totalLumi = 'TEST' if args.test else lumi[args.campaign][args.year]
 
 plt.style.use([hep.style.ROOT, {'font.size': 16}])
 plot_dir = args.outputDir if args.outputDir else os.getcwd()+"/plots/" + args.output + "/"

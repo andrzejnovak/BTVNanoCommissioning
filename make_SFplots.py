@@ -28,6 +28,7 @@ parser.add_argument('-o', '--outputDir', type=str, default='', help='Output dire
 #parser.add_argument('-d', '--dense', action='store_true', default=False, help='Normalized plots')
 parser.add_argument('--campaign', type=str, choices={'EOY', 'UL'}, help='Dataset campaign.', required=True)
 parser.add_argument('--year', type=str, choices=['2016', '2017', '2018'], help='Year of data/MC samples', required=True)
+parser.add_argument('--vfp', type=str, default=None, choices=['pre', 'post'], help='Year of data/MC samples', required=False)
 parser.add_argument('--var', type=str, default='sv_logsv1mass', help='Variable used in the template fit.', required=False)
 #parser.add_argument('--wpt', type=str, choices={'', 'M', 'H'}, default='', help='Pt bin')
 parser.add_argument('--data', type=str, default='BTagMu', help='Data sample name')
@@ -47,7 +48,9 @@ if args.campaign == 'EOY':
     pt_interval['Inclusive'] = (pt_interval['M'][0], 'Inf')
 else:
     pt_interval['Inclusive'] = (pt_interval['L'][0], 'Inf')
-totalLumi = lumi[args.year]
+if (args.year == '2016') & (args.vfp == parser.get_default('vfp')):
+    sys.exit("For 2016UL, specify if 'pre' or 'post' VFP.")
+totalLumi = lumi[args.campaign][args.year]
 if args.tagger in AK8TaggerWP[args.campaign][args.year].keys():
     taggers = [args.tagger]
 else:
