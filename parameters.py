@@ -1,11 +1,13 @@
 import numpy as np
 
 lumi = {
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
     'EOY': {
         '2016' : 36.33,
         '2017' : 41.53,
         '2018' : 59.74,
     },
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun2LegacyAnalysis
     'UL': {
         '2016-PreVFP' : 19.52,
         '2016-PostVFP' : 16.81,
