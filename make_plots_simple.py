@@ -10,7 +10,6 @@ import itertools
 import os
 import time
 from multiprocessing import Pool
-from utils import rescale
 from parameters import histogram_settings, flavors_color, flavor_opts, flavors_order, lumi, xsecs, AK8Taggers
 
 parser = argparse.ArgumentParser(description='Plot histograms from coffea file')
@@ -19,6 +18,7 @@ parser.add_argument('-o', '--output', type=str, default='', help='Output directo
 parser.add_argument('--outputDir', type=str, default=None, help='Output directory')
 parser.add_argument('-s', '--scale', type=str, default='linear', help='Plot y-axis scale', required=False)
 parser.add_argument('-d', '--dense', action='store_true', default=False, help='Normalized plots')
+parser.add_argument('--campaign', type=str, choices={'EOY', 'UL'}, help='Dataset campaign.', required=True)
 parser.add_argument('--year', type=str, choices=['2016', '2017', '2018'], help='Year of data/MC samples', required=True)
 parser.add_argument('--hist2d', action='store_true', default=False, help='Plot only 2D histograms')
 parser.add_argument('--proxy', action='store_true', help='Plot proxy and signal comparison')
@@ -151,7 +151,7 @@ selection_msd100tau06 = (r"$\geq$1 AK8 jets"+"\n"+
                   r"$\geq$2 $\mu$-tagged AK4 subjets"+"\n")
 """
 
-totalLumi = 'TEST' if args.test else lumi[args.year]
+totalLumi = 'TEST' if args.test else lumi[args.campaign][args.year]
 
 plt.style.use([hep.style.ROOT, {'font.size': 16}])
 plot_dir = args.outputDir if args.outputDir else os.getcwd()+"/plots/" + args.output + "/"
@@ -172,8 +172,8 @@ def make_plots(entrystart, entrystop):
         h = _accumulator[histname]
         varname = h.fields[-1]
         varlabel = h.axis(varname).label
-        if histname.startswith( tuple(histogram_settings['variables'].keys()) ):
-            h = h.rebin(varname, hist.Bin(varname, varlabel, **histogram_settings['variables']['_'.join(histname.split('_')[:2])]['binning']))
+        if histname.startswith( tuple(histogram_settings[args.campaign]['variables'].keys()) ):
+            h = h.rebin(varname, hist.Bin(varname, varlabel, **histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['binning']))
         h.scale( scaleXS, axis='dataset' )
         
         ##### grouping flavor
@@ -246,9 +246,9 @@ def make_plots(entrystart, entrystop):
             rax.set_ylabel('Data/MC')
             rax.set_ylim(0.0,2.0)
             rax.set_yticks([0.5, 1.0, 1.5])
-            if histname.startswith( tuple(histogram_settings['variables'].keys()) ):
-                ax.set_xlim(**histogram_settings['variables']['_'.join(histname.split('_')[:2])]['xlim'])
-                rax.set_xlim(**histogram_settings['variables']['_'.join(histname.split('_')[:2])]['xlim'])
+            if histname.startswith( tuple(histogram_settings[args.campaign]['variables'].keys()) ):
+                ax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['xlim'])
+                rax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['xlim'])
             x_low, x_high = rax.get_xlim()
             rax.hlines([0.5, 1.5], x_low, x_high, colors='grey', linestyles='dashed', linewidth=1)
             if ('Pt-' in histname.split('_')[-1]):

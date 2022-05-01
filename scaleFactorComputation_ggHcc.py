@@ -191,15 +191,15 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             sample.setParamEffect(jecs, 1.02)
             sample.setParamEffect(pu, 1.05)
 
-            if fixbkg:
-                sample.setParamEffect(signalNorm, effect_up=1.2, effect_down=0.8)
+            #if fixbkg:
+            #    sample.setParamEffect(signalNorm, effect_up=1.2, effect_down=0.8)
             
             if isSignal:
                 sample.autoMCStats(epsilon=args.epsilon)
                 fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
                 sample.setParamEffect(fracX, effect_up=1.2, effect_down=0.8)
             else:
-                sample.autoMCStats(lnN=True)
+                sample.autoMCStats(lnN=False)
             ch.addSample(sample)
 
         if wpt == 'Inclusive':
@@ -261,7 +261,7 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
     model.renderCombine(tmpdir)
     with open(tmpdir+'/build.sh', 'a') as ifile:
         #ifile.write('\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}Pt --cminDefaultMinimizerStrategy 0 --robustFit=1 --saveShapes  --rMin 0.5 --rMax 1.5'.format(wpt))
-        combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r --rMin 1 --rMax 1'.format(wp, wpt, signalName)
+        combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --robustHesse 1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r --rMin 1 --rMax 1'.format(wp, wpt, signalName)
         #freeze = []
         #if freezeL:
         #    freeze.append('l')
