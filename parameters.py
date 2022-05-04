@@ -346,6 +346,7 @@ histogram_settings = {
             'fatjet_btagDDCvLV2'  : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_btagDDCvBV2'  : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_particleNetMD': {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
+            'fatjet_deepTag  '    : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_deepTagMD'    : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_nsv1'         : {'binning' : {'n_or_arr' : 30,  'lo' : 0,      'hi' : 30},    'xlim' : {'xmin' : 0, 'xmax' : 10}},
             'fatjet_nsv2'         : {'binning' : {'n_or_arr' : 30,  'lo' : 0,      'hi' : 30},    'xlim' : {'xmin' : 0, 'xmax' : 10}},
@@ -379,6 +380,7 @@ histogram_settings = {
             'fatjet_btagDDCvLV2'  : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_btagDDCvBV2'  : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_particleNetMD': {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
+            'fatjet_deepTag'      : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_deepTagMD'    : {'binning' : {'n_or_arr' : 20,  'lo' : 0,      'hi' : 1},     'xlim' : {'xmin' : 0, 'xmax' : 1}},
             'fatjet_nsv1'         : {'binning' : {'n_or_arr' : 30,  'lo' : 0,      'hi' : 30},    'xlim' : {'xmin' : 0, 'xmax' : 10}},
             'fatjet_nsv2'         : {'binning' : {'n_or_arr' : 30,  'lo' : 0,      'hi' : 30},    'xlim' : {'xmin' : 0, 'xmax' : 10}},
@@ -502,6 +504,15 @@ fit_extra_args = {
                 'H' : {},
             },
         },
+    },
+    'baseline' : {
+        '2018' : {
+            'btagDDCvLV2' : {
+                'H' : {
+                    'H' : '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --robustHesse 1'
+                }
+            }
+        }
     }
 }
 
@@ -606,7 +617,7 @@ fit_parameters = {
             'btagDDCvLV2': {
                 'Inclusive': {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 10}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 'M':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 2}},
-                'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
             }
         }
     },

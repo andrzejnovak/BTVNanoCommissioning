@@ -14,9 +14,9 @@ cfg =  {
     "JECfolder": "correction_files/tmp",
 
     # Input and output files
-    "workflow" : "fatjet_tagger_ggHcc",
+    "workflow" : "fatjet_tagger",
     "input"    : "datasets/RunIISummer16EOY16_local.json",
-    "output"   : "histograms/RunIISummer16EOY16.coffea",
+    "output"   : "histograms/RunIISummer16EOY16_noDDCvBcut.coffea",
     "plots"    : "plots/RunIISummer16EOY16",
 
     # Executor parameters

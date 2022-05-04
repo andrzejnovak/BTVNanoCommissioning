@@ -27,6 +27,7 @@ parser.add_argument('--test', action='store_true', default=False, help='Test wit
 parser.add_argument('--data', type=str, default='BTagMu', help='Data sample name')
 parser.add_argument('--selection', type=str, default='all', help='Plot only plots with this selection. ("all" to plot all the selections in file)')
 parser.add_argument('--passfail', action='store_true', default=False, help='Plots in pass + fail regions')
+parser.add_argument('--lumiscale', action='store_true', default=None, help='Scale MC by x-section times luminoisity.', required=False)
 parser.add_argument('-n', '--normed', action='store_true', default=False, help='Normalized overlayed plots')
 parser.add_argument('-j', '--workers', type=int, default=12, help='Number of workers (cores/threads) to use for multi-worker execution (default: %(default)s)')
 
@@ -51,7 +52,10 @@ else:
 scaleXS = {}
 for isam in accumulator[next(iter(accumulator))].identifiers('dataset'):
     isam = str(isam)
-    scaleXS[isam] = 1 if isam.startswith('BTag') else xsecs[isam]/accumulator['sumw'][isam]
+    if args.lumiscale:
+        scaleXS[isam] = 1 if isam.startswith('BTag') else xsecs[isam]/accumulator['sumw'][isam] * 1000 * totalLumi
+    else:
+        scaleXS[isam] = 1 if isam.startswith('BTag') else xsecs[isam]/accumulator['sumw'][isam]
 
 data_err_opts = {
     'linestyle': 'none',
@@ -163,7 +167,7 @@ def make_plots(entrystart, entrystop):
     for histname in _accumulator:
         if args.only and not (args.only in histname): continue
         if not args.selection.startswith('all') and not ( args.selection in histname  ): continue
-        if not args.passfail and (any(r in histname for r in ['pass', 'fail'])): continue
+        #if not args.passfail and (any(r in histname for r in ['pass', 'fail'])): continue
         if histname in ["sumw", "nbtagmu", "nbtagmu_event_level", "nfatjet"]: continue
 
         if any([histname.startswith('cutflow')]): break
@@ -173,7 +177,7 @@ def make_plots(entrystart, entrystop):
         varname = h.fields[-1]
         varlabel = h.axis(varname).label
         if histname.startswith( tuple(histogram_settings[args.campaign]['variables'].keys()) ):
-            h = h.rebin(varname, hist.Bin(varname, varlabel, **histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['binning']))
+            h = h.rebin(varname, hist.Bin(varname, varlabel, **histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:-1])]['binning']))
         h.scale( scaleXS, axis='dataset' )
         
         ##### grouping flavor
@@ -216,9 +220,9 @@ def make_plots(entrystart, entrystop):
             dataSum = np.sum( h[args.data].sum('flavor').values()[('BTagMu',)] )
             QCDSum = np.sum( h[datasets_QCD].sum('dataset', 'flavor').values()[()] )
             QCD_rescaled = h[datasets_QCD].sum('dataset')
-            QCD_rescaled.scale( dataSum/QCDSum )
+            #QCD_rescaled.scale( dataSum/QCDSum )
             QCDALL_rescaled = h[datasets_QCD].sum('dataset', 'flavor')
-            QCDALL_rescaled.scale( dataSum/QCDSum )
+            #QCDALL_rescaled.scale( dataSum/QCDSum )
 
             ggH_rescaled = h[datasets_ggH].sum('flavor')
             scale_ggH = 100
@@ -247,8 +251,8 @@ def make_plots(entrystart, entrystop):
             rax.set_ylim(0.0,2.0)
             rax.set_yticks([0.5, 1.0, 1.5])
             if histname.startswith( tuple(histogram_settings[args.campaign]['variables'].keys()) ):
-                ax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['xlim'])
-                rax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:2])]['xlim'])
+                ax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:-1])]['xlim'])
+                rax.set_xlim(**histogram_settings[args.campaign]['variables']['_'.join(histname.split('_')[:-1])]['xlim'])
             x_low, x_high = rax.get_xlim()
             rax.hlines([0.5, 1.5], x_low, x_high, colors='grey', linestyles='dashed', linewidth=1)
             if ('Pt-' in histname.split('_')[-1]):

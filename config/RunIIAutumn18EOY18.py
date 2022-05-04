@@ -16,8 +16,8 @@ cfg =  {
     # Input and output files
     "workflow" : "fatjet_tagger_ggHcc",
     "input"    : "datasets/RunIIAutumn18EOY18_local.json",
-    "output"   : "histograms/RunIIAutumn18EOY18.coffea",
-    "plots"    : "plots/RunIIAutumn18EOY18",
+    "output"   : "histograms/RunIIAutumn18EOY18_FIXED_Pt-470to600.coffea",
+    "plots"    : "plots/RunIIAutumn18EOY18_FIXED_Pt-470to600",
 
     # Executor parameters
     "run_options" : {

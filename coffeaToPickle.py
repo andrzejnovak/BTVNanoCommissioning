@@ -18,7 +18,7 @@ parser.add_argument('--year', type=str, choices=['2016', '2017', '2018'], help='
 parser.add_argument('--vfp', type=str, default=None, choices=['pre', 'post'], help='Year of data/MC samples', required=False)
 parser.add_argument('--data', type=str, default='BTagMu', help='Data sample name')
 #parser.add_argument('--pt', type=int, default=500, help='Pt cut.')
-parser.add_argument('--lumiscale', type=float, default=None, help='Scale MC by x-section times luminoisity.', required=False)
+parser.add_argument('--lumiscale', action='store_true', default=None, help='Scale MC by x-section times luminoisity.', required=False)
 parser.add_argument('--scaleFail', type=float, default=None, help='Artificial scaling factor for distributions in the fail region.', required=False)
 parser.add_argument('--mergebbcc', action='store_true', default=False, help='Merge bb+cc')
 
@@ -128,7 +128,7 @@ for ivar in [ 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                         #h_passfail = h_passfail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
 
                         #### rescaling QCD to data
-                        if not args.scalelumi:
+                        if not args.lumiscale:
                             #print(h_passfail.values())
                             dataSum = np.sum( h_fail[args.data].sum('flavor').values()[('BTagMu',)] )
                             QCDSum = np.sum( h_fail[datasets_QCD].sum('dataset', 'flavor').values()[()] )

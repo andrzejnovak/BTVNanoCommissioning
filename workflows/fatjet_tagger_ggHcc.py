@@ -528,7 +528,7 @@ class NanoProcessor(processor.ProcessorABC):
             cuts.add( selname, ak.to_numpy( sel ) )
 
         selection = {}
-        selection['basic'] = { 'trigger', 'basic' }
+        selection['basic'] = { 'basic' }
         selection['msd100tau06'] = { 'trigger', 'fatjet_mutag', 'msd100tau06' }
         selection['msd100tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd100tau06ggHcc' }
         for mask_f in self._final_mask:
