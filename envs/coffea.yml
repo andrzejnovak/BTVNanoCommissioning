@@ -1,26 +1,41 @@
 name: coffea
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=4.5=1_gnu
-  - ca-certificates=2021.10.26=h06a4308_2
-  - certifi=2021.10.8=py39h06a4308_2
+  - c-ares=1.17.1=h7f98852_1
+  - ca-certificates=2021.10.8=ha878542_0
+  - certifi=2021.10.8=py39hf3d152e_2
+  - icu=68.1=h58526e2_0
+  - krb5=1.19.2=hcc1bbae_0
   - ld_impl_linux-64=2.35.1=h7274673_9
+  - libcurl=7.78.0=h2574ce0_0
+  - libedit=3.1.20191231=he28a2e2_2
+  - libev=4.33=h516909a_1
   - libffi=3.3=he6710b0_2
   - libgcc-ng=9.3.0=h5101ec6_17
   - libgomp=9.3.0=h5101ec6_17
+  - libiconv=1.16=h516909a_0
+  - libnghttp2=1.43.0=h812cca2_0
+  - libssh2=1.9.0=ha56f1ee_6
   - libstdcxx-ng=9.3.0=hd4cf53a_17
+  - libuuid=2.32.1=h7f98852_1000
+  - libxml2=2.9.12=h72842e0_0
   - ncurses=6.3=h7f8727e_2
-  - openssl=1.1.1m=h7f8727e_0
+  - openssl=1.1.1n=h7f8727e_0
   - pip=21.2.4=py39h06a4308_0
   - python=3.9.7=h12debd9_1
+  - python_abi=3.9=2_cp39
   - readline=8.1.2=h7f8727e_1
+  - scitokens-cpp=0.6.2=h8cfc780_1
   - setuptools=58.0.4=py39h06a4308_0
   - sqlite=3.37.2=hc218d9a_0
   - tk=8.6.11=h1ccaba5_0
   - tzdata=2021e=hda174b7_0
   - wheel=0.37.1=pyhd3eb1b0_0
+  - xrootd=5.3.0=py39h8ef998a_0
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7f8727e_4
   - pip:
@@ -39,7 +54,7 @@ dependencies:
     - charset-normalizer==2.0.12
     - click==8.0.4
     - cloudpickle==2.0.0
-    - coffea==0.7.13
+    - coffea==0.7.14
     - colorama==0.4.4
     - commonmark==0.9.1
     - correctionlib==2.1.0
@@ -123,6 +138,7 @@ dependencies:
     - tblib==1.7.0
     - terminado==0.13.2
     - testpath==0.6.0
+    - toml==0.10.2
     - tornado==6.1
     - tqdm==4.62.3
     - traitlets==5.1.1
