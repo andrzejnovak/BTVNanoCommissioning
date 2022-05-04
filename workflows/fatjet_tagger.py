@@ -486,9 +486,13 @@ class NanoProcessor(processor.ProcessorABC):
         cuts.add( 'fatjet_mutag', ak.to_numpy(fatjet_mutag) )
 
         for tagger in self._AK8TaggerWP.keys():
+            if 'btagDD' in tagger:
+                score = leadfatjet[tagger]
+            elif 'particleNetMD' in tagger:
+                score = leadfatjet[tagger] / (leadfatjet[tagger] + leadfatjet.particleNetMD_QCD)
             for wp, (cut_low, cut_high) in self._AK8TaggerWP[tagger].items():
-                tag_pass = (leadfatjet[tagger] > cut_low) & (leadfatjet[tagger] <= cut_high)
-                tag_fail = ~tag_pass & (leadfatjet[tagger] >= 0) & (leadfatjet[tagger] <= 1)
+                tag_pass = (score > cut_low) & (score <= cut_high)
+                tag_fail = ~tag_pass & (score >= 0) & (score <= 1)
                 cuts.add( f'{tagger}pass{wp}wp', ak.to_numpy(tag_pass) )
                 cuts.add( f'{tagger}fail{wp}wp', ak.to_numpy(tag_fail) )
         for wpt, (pt_low, pt_high) in self._PtBinning.items():
