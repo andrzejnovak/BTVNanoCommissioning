@@ -4,6 +4,7 @@ import awkward as ak
 from coffea.analysis_tools import Weights
 from utils.correction import *
 import gc
+from definitions import definitions
 
 
 class NanoProcessor(processor.ProcessorABC):
@@ -62,59 +63,16 @@ class NanoProcessor(processor.ProcessorABC):
         "DeepCSV_jetNSecondaryVertices","DeepCSV_jetNSelectedTracks","DeepCSV_jetNTracksEtaRel","DeepCSV_trackSumJetEtRatio","DeepCSV_trackSumJetDeltaR","DeepCSV_vertexNTracks"]
         btag_axes = []
         for d in disc_list:
-            btag_axes.append(hist.Bin(d, d, 50, 0, 1))    
+            btag_axes.append(hist.Bin(d, d, 51, -0.2, 1))    
         deepcsv_axes = []
+        input_names,manual_ranges,bins = definitions()
+        bininfo = dict(zip(input_names,zip(bins,manual_ranges)))
         for d in deepcsv_list:
-            if "flightDistance2dSig" in d or "flightDistance3dSig" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 101, -0.1, 100))
-            elif "flightDistance2dVal" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 27, -0.1, 2.6))
-            elif "flightDistance3dVal" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 51, -0.1, 5.))
-            elif "trackDecayLenVal" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 22, -0.1, 1.))
-            elif "trackPtRatio" in d or "DeltaR" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 30, -0.001, 0.301))
-            elif "trackEtaRel" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 30, 0, 9))
-            elif "trackJetDistVal" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 35, -0.08,0.0025))
-            elif "trackJetPt" in d : 
-                deepcsv_axes.append(hist.Bin(d, d, 50, 0.,250.))
-            elif "trackPtRel" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 32, -0.1, 3.1))
-            elif "trackSip2dSigAboveCharm" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 22, -5.5, 5.5))
-            elif "trackSip2dSig_0" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 21, -5, 16))
-            elif "trackSip2dSig_1" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 18, -5, 13))
-            elif "trackSip2dSig_2" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 16, -6, 10))
-            elif "trackSip2dSig_3" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 26, -6, 7))
-            elif "trackSip2dSig_4" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 22, -6.5, 4.5))
-            elif "trackSip2dSig_5" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 18, -7, 2))
-            elif "trackSip2dValAboveCharm" in d or "trackSip3dValAboveCharm " in d:
-                deepcsv_axes.append(hist.Bin(d, d, 24, -0.06, 0.06))
-            elif "trackSip3dSigAboveCharm" in d :
-                deepcsv_axes.append(hist.Bin(d, d, 26, -6.5, 6.5)) 
-            elif "trackSip3dSig" in d : 
-                deepcsv_axes.append(hist.Bin(d, d, 25, -25, 50)) 
-            elif "trackSumJetEtRatio" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 25, 0., 1.4)) 
-            elif "vertexCategory" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 32, -0.6,2.6)) 
-            elif "vertexEnergyRatio" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 25, 0,2.5)) 
-            elif "vertexMass" in d:
-                deepcsv_axes.append(hist.Bin(d, d, 20, 0,20))
-            else:
-                deepcsv_axes.append(hist.Bin(d, d, 25, -0.5,0.))
-        
-        
+            binning, ranges = bininfo["Jet_%s"%d]
+            if ranges[1] is None : ranges[1] = 0.
+            if ranges[0] is None : ranges[0] = -0.5
+            print(binning,ranges[0],ranges[1])
+            deepcsv_axes.append(hist.Bin(d,d,binning,ranges[0],ranges[1]))
         # Define histograms from axes
         _hist_jet_dict = {
                 'pt'  : hist.Hist("Counts", dataset_axis, flav_axis,jet_pt_axis),
@@ -182,6 +140,12 @@ class NanoProcessor(processor.ProcessorABC):
         req_lumi=np.ones(len(events), dtype='bool')
         if(isRealData): req_lumi=lumiMasks['2017'](events.run, events.luminosityBlock)
         weights = Weights(len(events), storeIndividual=True)
+        ## Define the CvL, CvB 
+        if not hasattr(events,"btagDeepFlavCvL"): 
+            events.Jet['btagDeepFlavCvL'] = np.where(((events.Jet.btagDeepFlavC/(1.-events.Jet.btagDeepFlavB))>0)&(events.Jet.pt>15),(events.Jet.btagDeepFlavC/(1.-events.Jet.btagDeepFlavB)),-1)
+            events.Jet['btagDeepFlavCvB'] = np.where(((events.Jet.btagDeepFlavC/(events.Jet.btagDeepFlavC+events.Jet.btagDeepFlavB))>0)&(events.Jet.pt>15),(events.Jet.btagDeepFlavC/(events.Jet.btagDeepFlavC+events.Jet.btagDeepFlavB)),-1)
+            events.Jet['btagDeepCvL'] = np.where((events.Jet.btagDeepC>0)&(events.Jet.pt>15),(events.Jet.btagDeepC/(1.-events.Jet.btagDeepB)),-1)
+            events.Jet['btagDeepCvB'] = np.where((events.Jet.btagDeepC>0)&(events.Jet.pt>15),(events.Jet.btagDeepC/(events.Jet.btagDeepC+events.Jet.btagDeepB)),-1)
         if not isRealData:
             weights.add('genweight',events.genWeight)
             weights.add('puweight', compiled['2017_pileupweight'](events.Pileup.nPU))
@@ -218,7 +182,6 @@ class NanoProcessor(processor.ProcessorABC):
         else :corrected_jets=jet_factory["data"].build(add_jec_variables(events.Jet, events.fixedGridRhoFastjetAll),lazy_cache=events.caches[0])
         
         event_jet = corrected_jets[((corrected_jets.pt*(1-corrected_jets.rawFactor))> 50) & (abs(corrected_jets.eta) <= 2.4)&(corrected_jets.puId > 0) &(corrected_jets.jetId>5)&(corrected_jets.btagDeepB>0.) & (corrected_jets.btagDeepB<1.) & (corrected_jets.btagDeepC>0.) & (corrected_jets.btagDeepC<1.) & (corrected_jets.btagDeepFlavB>0.) & (corrected_jets.btagDeepFlavB<1.) & (corrected_jets.btagDeepFlavC>0.) & (corrected_jets.btagDeepFlavC<1.)]
-        #event_jet = events.Jet[(events.Jet.pt > 25) & (abs(events.Jet.eta) <= 2.4)&(events.Jet.puId > 0) &(events.Jet.jetId>5)&(events.Jet.btagDeepB>0.) & (events.Jet.btagDeepB<1.) & (events.Jet.btagDeepC>0.) & (events.Jet.btagDeepC<1.) & (events.Jet.btagDeepFlavB>0.) & (events.Jet.btagDeepFlavB<1.) & (events.Jet.btagDeepFlavC>0.) & (events.Jet.btagDeepFlavC<1.)&(ak.all(events.Jet.metric_table(events.Muon) > 0.4, axis=2))&(ak.all(events.Jet.metric_table(events.Electron) > 0.4, axis=2))]
         req_jets = (ak.num(event_jet.puId) >= 2)
 
         event_level=req_trig & req_lumi & req_muon & req_ele & req_jets & req_opposite_charge
@@ -268,10 +231,10 @@ class NanoProcessor(processor.ProcessorABC):
                          output['btagDeepFlavC'].fill(dataset=dataset,flav=5,  btagDeepFlavC=ak.flatten(sjets.btagDeepFlavC)) 
                          output['btagDeepB'].fill(dataset=dataset,flav=5,  btagDeepB=ak.flatten(sjets.btagDeepB))
                          output['btagDeepC'].fill(dataset=dataset,flav=5,  btagDeepC=ak.flatten(sjets.btagDeepC))
-                         output['deepcsv_CvB'].fill(dataset=dataset,flav=5,  deepcsv_CvB=ak.flatten(sjets.btagDeepC/(1.-sjets.btagDeepB)))
-                         output['deepcsv_CvL'].fill(dataset=dataset,flav=5,  deepcsv_CvL=ak.flatten(sjets.btagDeepC/(sjets.btagDeepC+sjets.btagDeepB)))
-                         output['deepflav_CvB'].fill(dataset=dataset,flav=5,  deepflav_CvB=ak.flatten(sjets.btagDeepFlavC/(1.-sjets.btagDeepFlavB)))
-                         output['deepflav_CvL'].fill(dataset=dataset,flav=5,  deepflav_CvL=ak.flatten(sjets.btagDeepFlavC/(sjets.btagDeepFlavC+sjets.btagDeepFlavB)))
+                         output['deepcsv_CvB'].fill(dataset=dataset,flav=5,  deepcsv_CvB=ak.flatten(np.where(sjets.btagDeepCvB<0,-0.2,sjets.btagDeepCvB)))
+                         output['deepcsv_CvL'].fill(dataset=dataset,flav=5,  deepcsv_CvL=ak.flatten(np.where(sjets.btagDeepCvL<0,-0.2,sjets.btagDeepCvL)))
+                         output['deepflav_CvB'].fill(dataset=dataset,flav=5, deepflav_CvB=ak.flatten(np.where(sjets.btagDeepFlavCvB<0,-0.2,sjets.btagDeepFlavCvB)))
+                         output['deepflav_CvL'].fill(dataset=dataset,flav=5,  deepflav_CvL=ak.flatten(np.where(sjets.btagDeepFlavCvL<0,-0.2,sjets.btagDeepFlavCvL)))
                     elif "btag" not in histname :
                         fields = {l: ak.flatten(sjets[l.replace('jet_','')], axis=None) for l in h.fields if l.replace('jet_','') in dir(sjets)}
                         h.fill(dataset=dataset,flav=5, **fields)
@@ -284,10 +247,10 @@ class NanoProcessor(processor.ProcessorABC):
                          output['btagDeepFlavC'].fill(dataset=dataset,flav=ak.flatten(genflavor),  btagDeepFlavC=ak.flatten(sjets.btagDeepFlavC),weight=genweiev) 
                          output['btagDeepB'].fill(dataset=dataset,flav=ak.flatten(genflavor),  btagDeepB=ak.flatten(sjets.btagDeepB),weight=genweiev)
                          output['btagDeepC'].fill(dataset=dataset,flav=ak.flatten(genflavor),  btagDeepC=ak.flatten(sjets.btagDeepC),weight=genweiev)
-                         output['deepcsv_CvB'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepcsv_CvB=ak.flatten(sjets.btagDeepC/(1.-sjets.btagDeepB)),weight=genweiev)
-                         output['deepcsv_CvL'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepcsv_CvL=ak.flatten(sjets.btagDeepC/(sjets.btagDeepC+sjets.btagDeepB)),weight=genweiev)
-                         output['deepflav_CvB'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepflav_CvB=ak.flatten(sjets.btagDeepFlavC/(1.-sjets.btagDeepFlavB)),weight=genweiev)
-                         output['deepflav_CvL'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepflav_CvL=ak.flatten(sjets.btagDeepFlavC/(sjets.btagDeepFlavC+sjets.btagDeepFlavB)),weight=genweiev)
+                         output['deepcsv_CvB'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepcsv_CvB=ak.flatten(np.where(sjets.btagDeepCvB<0,-0.2,sjets.btagDeepCvB)),weight=genweiev)
+                         output['deepcsv_CvL'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepcsv_CvL=ak.flatten(np.where(sjets.btagDeepCvL<0,-0.2,sjets.btagDeepCvL)),weight=genweiev)
+                         output['deepflav_CvB'].fill(dataset=dataset,flav=ak.flatten(genflavor), deepflav_CvB=ak.flatten(np.where(sjets.btagDeepFlavCvB<0,-0.2,sjets.btagDeepFlavCvB)),weight=genweiev)
+                         output['deepflav_CvL'].fill(dataset=dataset,flav=ak.flatten(genflavor),  deepflav_CvL=ak.flatten(np.where(sjets.btagDeepFlavCvL<0,-0.2,sjets.btagDeepFlavCvL)),weight=genweiev)
                     elif "btag" not in histname :
                         fields = {l: ak.flatten(sjets[histname]) for l in h.fields if l in dir(sjets)}
                         genweiev=ak.flatten(ak.broadcast_arrays(weights.weight()[event_level],sjets['pt'])[0])

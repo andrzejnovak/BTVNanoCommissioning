@@ -10,7 +10,7 @@ from coffea.analysis_tools import Weights
 import gc
 from utils.correction import *
 from definitions import *
-
+from helpers.cTagSFReader import getSF
 
 class NanoProcessor(processor.ProcessorABC):
     # Define histograms
@@ -87,6 +87,7 @@ class NanoProcessor(processor.ProcessorABC):
         "DeepCSV_flightDistance2dVal","DeepCSV_flightDistance2dSig","DeepCSV_flightDistance3dVal","DeepCSV_flightDistance3dSig","DeepCSV_trackJetPt", 
         "DeepCSV_jetNSecondaryVertices","DeepCSV_jetNSelectedTracks","DeepCSV_jetNTracksEtaRel","DeepCSV_trackSumJetEtRatio","DeepCSV_trackSumJetDeltaR","DeepCSV_vertexNTracks"]   
         deepcsv_axes = []
+        input_names,manual_ranges,bins = definitions()
         bininfo = dict(zip(input_names,zip(bins,manual_ranges)))
         for d in deepcsv_list:
             binning, ranges = bininfo["Jet_%s"%d]

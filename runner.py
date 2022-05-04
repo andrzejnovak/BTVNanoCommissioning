@@ -292,8 +292,8 @@ if __name__ == '__main__':
                             walltime="00:20:00",
                         ),
                     )
-                ]
-                retries=20,
+                ],
+            retries=20,
             )
         else:
             raise NotImplementedError
