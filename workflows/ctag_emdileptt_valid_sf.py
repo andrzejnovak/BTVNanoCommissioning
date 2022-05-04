@@ -10,9 +10,9 @@ import awkward as ak
 from coffea.analysis_tools import Weights
 
 import gc
-# from utils.correction import lumiMasks, compiled, eleSFs,muSFs,deepcsvb_sf,deepcsvc_sf,deepjetb_sf,deepjetc_sf
+from utils.correction import lumiMasks, compiled, eleSFs,muSFs,deepcsvb_sf,deepcsvc_sf,deepjetb_sf,deepjetc_sf
 from definitions import definitions
-# from helpers.cTagSFReader import getSF
+from helpers.cTagSFReader import getSF
 
 class NanoProcessor(processor.ProcessorABC):
     # Define histograms
