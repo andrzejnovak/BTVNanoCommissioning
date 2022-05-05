@@ -1,7 +1,7 @@
 import uproot
 import numpy as np
 import awkward as ak
-import importlib
+import importlib.resources
 import coffea
 from coffea import hist, processor
 

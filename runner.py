@@ -170,7 +170,7 @@ if __name__ == '__main__':
         ]
         condor_extra = [
             f'source {os.environ["HOME"]}/.bashrc',
-            f'conda activate coffea',
+            f'conda activate {os.environ["CONDA_PREFIX"]}',
         ]
 
     #########
