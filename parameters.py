@@ -408,7 +408,7 @@ for campaign in ['EOY', 'UL']:
     for tagger in AK8Taggers:
         histogram_settings[campaign]['variables']['fatjet_{}'.format(tagger)] = AK8Tagger_parameters
 
-#sample_names = ['bb', 'cc', 'b', 'c', 'l']
+sample_splitflavor_names = ['cc', 'bb', 'c', 'b', 'l']
 sample_baseline_names = ['c_cc', 'b_bb', 'l']
 sample_merged_names = ['bb_cc', 'l']
 flavors_order = {
@@ -509,7 +509,7 @@ fit_extra_args = {
         '2018' : {
             'btagDDCvLV2' : {
                 'H' : {
-                    'H' : '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --robustHesse 1'
+                    #'H' : '--X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --robustHesse 1'
                 }
             }
         }
@@ -620,6 +620,174 @@ fit_parameters = {
                 'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
             }
         }
+    },
+
+    'newmodel': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 100}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+    },
+
+    'newmodel_cclmcstat': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 100}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+    },
+
+    'newmodel_ccbblmcstat': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -500, 'hi' : 500}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+    },
+
+    'newmodel_splitflavor_ccbblmcstat': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -2, 'hi' : 2}},
+                },
+            },
+        },
+    },
+
+    'ccmcstat_cc20': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+    },
+
+    'ccbblmcstat_bbl20': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}, 'b_bb': {'value' : 1, 'lo' : -20, 'hi' : 20}, 'l': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -2, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+    },
+
+    'ccbblmcstat': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : 0, 'hi' : 20}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 20}, 'l': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
     },
 
     'baseline': {

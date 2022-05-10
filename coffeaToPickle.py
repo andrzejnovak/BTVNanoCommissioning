@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 from coffea.util import load
 from coffea.hist import plot
+from coffea.hist.plot import poisson_interval
 import coffea.hist as hist
 import itertools
 import os
@@ -19,8 +20,11 @@ parser.add_argument('--vfp', type=str, default=None, choices=['pre', 'post'], he
 parser.add_argument('--data', type=str, default='BTagMu', help='Data sample name')
 #parser.add_argument('--pt', type=int, default=500, help='Pt cut.')
 parser.add_argument('--lumiscale', action='store_true', default=None, help='Scale MC by x-section times luminoisity.', required=False)
+parser.add_argument('--failscale', action='store_true', default=None, help='Scale MC in order to match MC to data in fail region.', required=False)
+parser.add_argument('--ptscale', action='store_true', default=None, help='Scale MC in order to match MC to data in pt distribution.', required=False)
 parser.add_argument('--scaleFail', type=float, default=None, help='Artificial scaling factor for distributions in the fail region.', required=False)
 parser.add_argument('--mergebbcc', action='store_true', default=False, help='Merge bb+cc')
+parser.add_argument('--splitflavor', action='store_true', default=False, help='Split b+bb and c+cc into b, bb, c, cc')
 
 args = parser.parse_args()
 print("Running with options:")
@@ -83,19 +87,23 @@ for ivar in [ 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                             raise NotImplementedError
                         else:
                             h          = accumulator[histname_coffea]
-                            #h_fail     = accumulator[histname_coffea.replace(f'{isel}{tagger}pass', f'{isel}{tagger}fail')].copy()
+                            h_fail     = accumulator[histname_coffea.replace(f'{isel}{tagger}pass', f'{isel}{tagger}fail')].copy()
+                            h_pt       = accumulator[f'fatjet_pt_{isel}btagDDCvLV2failHwpPt-450toInf'].copy()
                             #h_passfail = accumulator[f'{ivar}_{isel}'].copy()
                         h.scale( scaleXS, axis='dataset' )
-                        #h_fail.scale( scaleXS, axis='dataset' )
+                        h_fail.scale( scaleXS, axis='dataset' )
+                        h_pt.scale( scaleXS, axis='dataset' )
                         #h_passfail.scale( scaleXS, axis='dataset' )
                         if (args.scaleFail != None) & (passfail == 'fail'):
                             print(f"Scaling fail distributions by a factor {args.scaleFail}")
                             #h.scale( args.scaleFail, axis='dataset' )
                             h.scale( args.scaleFail )
-                            #h_fail.scale( args.scaleFail )
+                            h_fail.scale( args.scaleFail )
+                            h_pt.scale( args.scaleFail )
                             #h_passfail.scale( args.scaleFail )
                         h          = h.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
-                        #h_fail     = h_fail.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
+                        h_fail     = h_fail.rebin(h_fail.fields[-1], hist.Bin(h_fail.fields[-1], h_fail.axis(h_fail.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
+                        h_pt       = h_pt.rebin(h_pt.fields[-1], hist.Bin(h_pt.fields[-1], h_pt.axis(h_pt.fields[-1]).label, **histogram_settings[args.campaign]['variables']['fatjet_pt']['binning']))
                         #h_passfail = h_passfail.rebin(h.fields[-1], hist.Bin(h.fields[-1], h.axis(h.fields[-1]).label, **histogram_settings[args.campaign]['variables'][ivar]['binning']))
 
                         ##### grouping flavor
@@ -106,11 +114,13 @@ for ivar in [ 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                             mapping_flavor.pop(flav)
                         if args.mergebbcc:
                             mapping_flavor['bb_cc'] = ['b', 'bb', 'c', 'cc']
-                        else:
+                        elif not args.splitflavor:
                             mapping_flavor['b_bb'] = ['b', 'bb']
                             mapping_flavor['c_cc'] = ['c', 'cc']
-                        h          = h.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
-                        #h_fail     = h_fail.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                        if not args.splitflavor:
+                            h          = h.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                            h_fail     = h_fail.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
+                            h_pt       = h_pt.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
                         #h_passfail = h_passfail.group("flavor", hist.Cat("flavor", "Flavor"), mapping_flavor)
 
                         ##### grouping data and QCD histos
@@ -124,20 +134,50 @@ for ivar in [ 'sv_logsv1mass', 'sv_logsv1mass_maxdxySig' ]:
                         datasets_QCD = [dataset for dataset in datasets if ((args.data not in dataset) & ('GluGlu' not in dataset))]
                         
                         h          = h.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
-                        #h_fail     = h_fail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
+                        h_fail     = h_fail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
+                        h_pt       = h_pt.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
                         #h_passfail = h_passfail.group("dataset", hist.Cat("dataset", "Dataset"), mapping)
 
                         #### rescaling QCD to data
-                        if not args.lumiscale:
+                        if args.failscale:
                             #print(h_passfail.values())
                             dataSum = np.sum( h_fail[args.data].sum('flavor').values()[('BTagMu',)] )
                             QCDSum = np.sum( h_fail[datasets_QCD].sum('dataset', 'flavor').values()[()] )
                             QCD = h[datasets_QCD].sum('dataset')
                             QCD.scale( dataSum/QCDSum )
 
-                            #wrong_factor = np.sum( h[args.data].sum('flavor').values()[('BTagMu',)] ) / np.sum( h[datasets_QCD].sum('dataset', 'flavor').values()[()] )
-                            #print(histname_coffea)
-                            #print("correct =", dataSum/QCDSum, "wrong =", wrong_factor, "ratio =", dataSum/QCDSum/wrong_factor)
+                            wrong_factor = np.sum( h[args.data].sum('flavor').values()[('BTagMu',)] ) / np.sum( h[datasets_QCD].sum('dataset', 'flavor').values()[()] )
+                            print(histname_coffea)
+                            print("correct =", dataSum/QCDSum, "wrong =", wrong_factor, "ratio =", dataSum/QCDSum/wrong_factor)
+                        elif args.ptscale:
+                            sumw_num, sumw2_num = h_pt[args.data].sum('flavor').values(sumw2=True)[('BTagMu',)]
+                            if histname_coffea == "sv_logsv1mass_msd100tau06btagDDBvLV2failHwpPt-450toInf":
+                                print("data", h_pt[args.data].sum('flavor').values(sumw2=True)[('BTagMu',)] )
+                                print("QCD", h_pt[datasets_QCD].sum('dataset').values(sumw2=True) )
+                            sumw_denom, sumw2_denom = h_pt[datasets_QCD].sum('dataset', 'flavor').values(sumw2=True)[()]
+                            rsumw = sumw_num / sumw_denom
+                            unity = np.ones_like(sumw_denom)
+                            num_unc    = poisson_interval(unity, sumw2_num / sumw_denom ** 2)
+                            num_up     = np.r_[num_unc[0], num_unc[0, -1]][:-1]
+                            num_down   = np.r_[num_unc[1], num_unc[1, -1]][:-1]
+                            #print("len(num_up)", len(num_up))
+                            #print("len(unity)", len(unity))
+                            num_err    = np.max((num_up - unity, unity - num_down) , axis=0)
+                            denom_unc  = poisson_interval(unity, sumw2_denom / sumw_denom ** 2)
+                            denom_up   = np.r_[denom_unc[0], denom_unc[0, -1]][:-1]
+                            denom_down = np.r_[denom_unc[1], denom_unc[1, -1]][:-1]
+                            denom_err  = np.max((denom_up - unity, unity - denom_down) , axis=0)
+                            rsumw_err  = np.sqrt(num_err**2 + denom_err**2)
+                            #print("rsumw", rsumw)
+                            #print("rsumw_err", rsumw_err)
+                            rsumw_avg, rsumw_sumw = np.average(rsumw[~np.isnan(rsumw_err)], weights=1/rsumw_err[~np.isnan(rsumw_err)]**2, returned=True)
+                            rsumw_unc = 1/rsumw_sumw
+                            rsumw_unc_custom = 1/np.sum(1/rsumw_err[~np.isnan(rsumw_err)]**2)
+                            QCD = h[datasets_QCD].sum('dataset')
+                            QCD.scale(rsumw_avg)
+                            #print("rsumw", rsumw)
+                            #print("rsumw_err", rsumw_err)
+                            print(histname_coffea, "rsumw_avg", rsumw_avg, "+-", rsumw_unc, "or", rsumw_unc_custom)
                         else:
                             QCD = h[datasets_QCD].sum('dataset')
 
