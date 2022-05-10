@@ -131,10 +131,12 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             signalName = 'c_cc'
         else:
             raise NotImplementedError
-        if not fixbkg:
-            (indep_c_cc, indep_b_bb, indep_l) = (rl.IndependentParameter(sName, **pars[sName]) for sName in sample_names)
-        else:
-            signalSF = rl.IndependentParameter(signalName, **pars[signalName])
+        #if not fixbkg:
+        #    (indep_c_cc, indep_b_bb, indep_l) = (rl.IndependentParameter(sName, **pars[sName]) for sName in sample_names)
+        #else:
+        #    signalSF = rl.IndependentParameter(signalName, **pars[signalName])
+        (indep_c_cc, indep_b_bb, indep_l) = (rl.IndependentParameter(sName, **pars[sName]) for sName in sample_names)
+        #indep_c_cc_fail = rl.IndependentParameter('c_cc_fail', 1, 0, 2)
     else:
         signalName = 'bb_cc'
         sample_names = sample_merged_names
@@ -147,6 +149,8 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             if ((pars[sName]['lo'] == 1) & (pars[sName]['hi'] == 1)):
                 freeze.append(sName)
     else:
+        freeze = ['c_cc', 'b_bb', 'l']
+        freeze.pop(freeze.index(signalName))
         signalNorm = rl.NuisanceParameter('{}_norm'.format(signalName), 'shape')
     
     observable = rl.Observable(var.split('_')[-1], bins)
@@ -197,12 +201,12 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             
             if isSignal:
                 sample.autoMCStats(epsilon=args.epsilon)
-                fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
-                sample.setParamEffect(fracX, effect_up=1.2, effect_down=0.8)
+                #fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
+                #sample.setParamEffect(fracX, effect_up=1.2, effect_down=0.8)
             else:
                 fracX = rl.NuisanceParameter('frac_'+sName, 'shape')
                 sample.setParamEffect(fracX, effect_up=1.2, effect_down=0.8)
-                #sample.autoMCStats(lnN=True)
+                sample.autoMCStats(lnN=True)
             ch.addSample(sample)
 
         if wpt == 'Inclusive':
@@ -230,29 +234,33 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
         print("The parameter 'l' will be frozen.")
 
     if not mergebbcc:
-        if fixbkg:
-            pars_fit = [signalSF]
-        else:
-            pars_fit = [indep_c_cc, indep_b_bb, indep_l]
+        #if fixbkg:
+        #    pars_fit = [signalSF]
+        #else:
+        pars_fit = [indep_c_cc, indep_b_bb, indep_l]
     else:
         pars_fit = [indep_bb_cc, indep_l]
     if not passonly:
-        if not fixbkg:
-            for sample, SF in zip(sample_names, pars_fit):
-                if sample != SF.name:
-                    print(sample, "!=", SF.name)
-                    sys.exit("Sample and scale factor names are not matching.")
-                pass_sample = model['sfpass'][sample]
-                fail_sample = model['sffail'][sample]
-                pass_fail = pass_sample.getExpectation(nominal=True).sum() / fail_sample.getExpectation(nominal=True).sum()
-                pass_sample.setParamEffect(SF, 1.0 * SF)
-                fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
-        else:
-            pass_sample = model['sfpass'][signalName]
-            fail_sample = model['sffail'][signalName]
+        #if not fixbkg:
+        for sample, SF in zip(sample_names, pars_fit):
+            if sample != SF.name:
+                print(sample, "!=", SF.name)
+                sys.exit("Sample and scale factor names are not matching.")
+            pass_sample = model['sfpass'][sample]
+            fail_sample = model['sffail'][sample]
             pass_fail = pass_sample.getExpectation(nominal=True).sum() / fail_sample.getExpectation(nominal=True).sum()
-            pass_sample.setParamEffect(signalSF, 1.0 * signalSF)
-            fail_sample.setParamEffect(signalSF, (1 - signalSF) * pass_fail + 1)
+            pass_sample.setParamEffect(SF, 1.0 * SF)
+            fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
+            #if sample == 'c_cc':
+            #    fail_sample.setParamEffect(indep_c_cc_fail, 1.0 * indep_c_cc_fail)
+            #else:
+            #    fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
+        #else:
+        #    pass_sample = model['sfpass'][signalName]
+        #    fail_sample = model['sffail'][signalName]
+        #    pass_fail = pass_sample.getExpectation(nominal=True).sum() / fail_sample.getExpectation(nominal=True).sum()
+        #    pass_sample.setParamEffect(signalSF, 1.0 * signalSF)
+        #    fail_sample.setParamEffect(signalSF, (1 - signalSF) * pass_fail + 1)
     else:
         if mergebbcc: raise NotImplementedError
         for sample, SF in zip(sample_names, pars_fit):

@@ -39,6 +39,15 @@ start = time.time()
 print("Running with options:")
 print("    ", args)
 
+if (args.campaign == 'UL') & (args.year == '2016'):
+    if args.vfp == parser.get_default('vfp'):
+        sys.exit("For 2016UL, specify if 'pre' or 'post' VFP.")
+    else:
+        vfp_label = {'pre' : '-PreVFP', 'post' : '-PostVFP'}[args.vfp]
+        totalLumi = lumi[args.campaign][f"{args.year}{vfp_label}"]
+else:
+    totalLumi = lumi[args.campaign][args.year]
+
 if os.path.isfile( args.input ): accumulator = load(args.input)
 else:
     files_list = [ifile for ifile in os.listdir(args.input) if ifile != args.output]
