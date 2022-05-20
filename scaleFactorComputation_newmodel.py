@@ -89,7 +89,7 @@ def merge_pt_bins(template_1, template_2, data=False):
         h_sumw2 = h_sumw2_1 + h_sumw2_2
         return (h_vals, bins_1, obsname_1, h_sumw2)
 
-def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp, wpt='', pars_key=None, epsilon=0.0001, passonly=False, mergebbcc=False, fixbkg=False, splitflavor=False, mcstat=None):
+def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp, wpt='', pars_key=None, epsilon=0.0001, passonly=False, mergebbcc=False, fixbkg=False, splitflavor=False, mcstat=None, frac=None, flavorunc=1.20):
     pars = fit_parameters[pars_key][year]
     pars = pars[tagger][wp][wpt]
 
@@ -98,12 +98,21 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
     pu = rl.NuisanceParameter('CMS_pu', 'lnN')
 
     overall  = rl.IndependentParameter('yield', 1., 0, 10)
-    c_cc     = rl.IndependentParameter('c_cc', **pars['c_cc'])
-
-    background = {
-        'b_bb' : rl.NuisanceParameter('b_bb', 'lnN'),
-        'l'    : rl.NuisanceParameter('l', 'lnN'),
-    }
+    #if mergebbcc:
+    #    bb_cc      = rl.IndependentParameter('bb_cc', **pars['bb_cc'])
+    #    background = {
+    #        'l'    : rl.NuisanceParameter('l', 'lnN'),
+    #    }
+    #else:
+    #    signal     = {
+    #        'c_cc': rl.IndependentParameter('c_cc', **pars['c_cc']),
+    #        'b_bb': rl.IndependentParameter('b_bb', **pars['b_bb']),
+    #    }
+    #    background = {
+    #        'b_bb' : rl.NuisanceParameter('b_bb', 'lnN'),
+    #        'c_cc' : rl.NuisanceParameter('c_cc', 'lnN'),
+    #        'l'    : rl.NuisanceParameter('l', 'lnN'),
+    #    }
 
     if splitflavor:
         sample_names = sample_splitflavor_names
@@ -112,7 +121,36 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             flavor_fraction[sName] = rl.NuisanceParameter('flavor_frac_{}'.format(sName), 'lnN')
     else:
         sample_names = sample_baseline_names
-    signalName = 'c_cc'
+
+    if mergebbcc:
+        signalName = 'bb_cc'
+        scale_factors = {
+            'cc' : rl.IndependentParameter('bb_cc', **pars['bb_cc']),
+            'c'  : rl.IndependentParameter('bb_cc', **pars['bb_cc']),
+            'bb' : rl.IndependentParameter('bb_cc', **pars['bb_cc']),
+            'b'  : rl.IndependentParameter('bb_cc', **pars['bb_cc']),
+            'l'  : rl.NuisanceParameter('l', 'lnN'),
+        }
+    elif 'DDC' in tagger:
+        signalName = 'c_cc'
+        xxbkgName  = 'b_bb'
+        scale_factors = {
+            'cc' : rl.IndependentParameter('c_cc', **pars['c_cc']),
+            'c'  : rl.IndependentParameter('c_cc', **pars['c_cc']),
+            'bb' : rl.NuisanceParameter('b_bb', 'lnN'),
+            'b'  : rl.NuisanceParameter('b_bb', 'lnN'),
+            'l'  : rl.NuisanceParameter('l', 'lnN'),
+        }
+    elif 'DDB' in tagger:
+        signalName = 'b_bb'
+        xxbkgName  = 'c_cc'
+        scale_factors = {
+            'bb' : rl.IndependentParameter('b_bb', **pars['b_bb']),
+            'b'  : rl.IndependentParameter('b_bb', **pars['b_bb']),
+            'cc' : rl.NuisanceParameter('c_cc', 'lnN'),
+            'c'  : rl.NuisanceParameter('c_cc', 'lnN'),
+            'l'  : rl.NuisanceParameter('l', 'lnN'),
+        }
 
     pt_bins = PtBinning[campaign][year]
     name_map = {'n_or_arr' : 'num', 'lo' : 'start', 'hi' : 'stop'}
@@ -149,7 +187,10 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             if splitflavor:
                 isSignal = True if sName in signalName else False
             else:
-                isSignal = True if sName == signalName else False
+                if mergebbcc:
+                    isSignal = True if sName.split('_')[-1] in signalName else False
+                else:
+                    isSignal = True if sName == signalName else False
             sType = rl.Sample.SIGNAL if isSignal else rl.Sample.BACKGROUND
             sample = rl.TemplateSample("{}_{}".format(ch.name, sName), sType, template)
             #print('sample',sample)
@@ -160,8 +201,10 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
             #sample.setParamEffect(pu, 1.05)
 
             # Systematic uncertainty on relative flavor contribution
+            flavor_unc = args.flavorunc
             if splitflavor:
-                sample.setParamEffect(flavor_fraction[sName], 1.2)
+                if sName in frac.split(','):
+                    sample.setParamEffect(flavor_fraction[sName], flavor_unc)
 
             # MC stats
             if mcstat == None:
@@ -190,26 +233,47 @@ def test_sfmodel(tmpdir, var, lo, hi, inputFile, year, campaign, sel, tagger, wp
         model.addChannel(ch)
 
     # SF effect in pass/fail regions
-    if splitflavor:
-        scale_factors = [c_cc, background['b_bb'], c_cc, background['b_bb'], background['l']]
-    for sName, SF in zip(sample_names, scale_factors):
+    #if splitflavor:
+    #    if mergebbcc:
+    #        scale_factors = [bb_cc, bb_cc, bb_cc, bb_cc, background['l']]
+    #    else:
+    #        scale_factors = [signal[signalName], background[xxbkgName], signal[signalName], background[xxbkgName], background['l']]
+    #else:
+    #    if mergebbcc:
+    #        scale_factors = [bb_cc, bb_cc, background['l']]
+    #    else:
+    #        scale_factors = [signal[signalName], background[xxbkgName], background['l']]
+
+    bkg_unc = 0.50
+    #for sName, SF in zip(sample_names, scale_factors):
+    for sName, SF in scale_factors.items():
         pass_sample = model['sfpass'][sName]
         fail_sample = model['sffail'][sName]
         pass_fail = pass_sample.getExpectation(nominal=True).sum() / fail_sample.getExpectation(nominal=True).sum()
         pass_sample.setParamEffect(overall, 1.0 * overall)
         fail_sample.setParamEffect(overall, 1.0 * overall)
-        if 'c' in sName:
-            pass_sample.setParamEffect(SF, 1.0 * SF)
-            fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
-        elif ('b' in sName) | ('l' in sName):
-            pass_sample.setParamEffect(SF, 1.5)
-            fail_sample.setParamEffect(SF, 1 - 0.5 * pass_fail)
+        if mergebbcc:
+            if ('c' in sName) | ('b' in sName):
+                pass_sample.setParamEffect(SF, 1.0 * SF)
+                fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
+            elif ('l' in sName):
+                pass_sample.setParamEffect(SF, 1 + bkg_unc)
+                fail_sample.setParamEffect(SF, 1 - bkg_unc * pass_fail)
+        else:
+            #if ('c' in sName):
+            if (signalName[0] in sName):
+                pass_sample.setParamEffect(SF, 1.0 * SF)
+                fail_sample.setParamEffect(SF, (1 - SF) * pass_fail + 1)
+            elif (xxbkgName[0] in sName) | ('l' in sName):
+                pass_sample.setParamEffect(SF, 1 + bkg_unc)
+                fail_sample.setParamEffect(SF, 1 - bkg_unc * pass_fail)
 
     model.renderCombine(tmpdir)
     with open(tmpdir+'/build.sh', 'a') as ifile:
         #ifile.write('\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}Pt --cminDefaultMinimizerStrategy 0 --robustFit=1 --saveShapes  --rMin 0.5 --rMax 1.5'.format(wpt))
         #combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --robustHesse 1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r --rMin 1 --rMax 1'.format(wp, wpt, signalName)
-        combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r,flavor_frac_cc,flavor_frac_bb,flavor_frac_c,flavor_frac_b,flavor_frac_l --rMin 1 --rMax 1'.format(wp, wpt, signalName)
+        #combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r,flavor_frac_cc,flavor_frac_bb,flavor_frac_c,flavor_frac_b,flavor_frac_l --rMin 1 --rMax 1'.format(wp, wpt, signalName)
+        combineCommand = '\ncombine -M FitDiagnostics --expectSignal 1 -d model_combined.root --name {}wp{}Pt --cminDefaultMinimizerStrategy 2 --robustFit=1 --saveShapes --saveWithUncertainties --saveOverallShapes --redefineSignalPOIs={} --setParameters r=1 --freezeParameters r --rMin 1 --rMax 1'.format(wp, wpt, signalName)
         #freeze = []
         #if freezeL:
         #    freeze.append('l')
@@ -361,6 +425,8 @@ if __name__ == '__main__':
     parser.add_argument('--mergeMH', action='store_true', default=False, help='Merge M+H pT bins')
     parser.add_argument('--fixbkg', action='store_true', default=False, help='Fix all the background templates in the fit')
     parser.add_argument('--splitflavor', action='store_true', default=False, help='Split b+bb and c+cc into b, bb, c, cc')
+    parser.add_argument("--frac", type=str, default='', help='List of templates to activate flavor fraction shape uncertainties')
+    parser.add_argument("--flavorunc", type=float, default=1.20, help='Flavor fraction systematic uncertainty')
 
     #parser.add_argument("--tf", "--template-fail", dest='tf', type=str,
     #                    default='histograms/hists_fattag_pileupJEC_2017_WPcuts_v01.pkl',
@@ -379,15 +445,15 @@ if __name__ == '__main__':
     for template in args.mcstat.split(','):
         if args.splitflavor:
             if template not in sample_splitflavor_names:
-                sys.exit("Template '{}' does not exist.".format(template))
+                sys.exit("Template '{}' does not exist. Redefine mcstat.".format(template))
         else:
             if template not in sample_baseline_names:
-                sys.exit("Template '{}' does not exist.".format(template))
+                sys.exit("Template '{}' does not exist. Redefine mcstat.".format(template))
     output_dir = args.outputDir if args.outputDir else os.getcwd()+"/fitdir/"+args.year+'/'+args.selection+'_'+args.tagger+'/'
     if not output_dir.endswith('/'):
         output_dir = output_dir + '/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    test_sfmodel(output_dir, args.var, args.lo, args.hi, args.tpf, args.year, args.campaign, args.selection, args.tagger, args.wp, args.wpt, args.parameters, args.epsilon, args.passonly, args.mergebbcc, args.fixbkg, args.splitflavor, args.mcstat)
+    test_sfmodel(output_dir, args.var, args.lo, args.hi, args.tpf, args.year, args.campaign, args.selection, args.tagger, args.wp, args.wpt, args.parameters, args.epsilon, args.passonly, args.mergebbcc, args.fixbkg, args.splitflavor, args.mcstat, args.frac, args.flavorunc)
     save_results(output_dir, args.year, args.campaign, args.selection, args.tagger, args.wp, args.wpt, args.parameters, args.mergebbcc, args.createcsv, args.createtex)
