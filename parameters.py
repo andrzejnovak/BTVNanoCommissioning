@@ -681,14 +681,14 @@ fit_parameters = {
         '2017': {
             'btagDDCvLV2': {
                 'H' : {
-                    'H':         {'c_cc': {'value' : 1, 'lo' : -500, 'hi' : 500}},
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
                 },
             },
         },
         '2018': {
             'btagDDCvLV2': {
                 'H' : {
-                    'H':         {'c_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 20}},
                 },
             },
         },
@@ -713,6 +713,69 @@ fit_parameters = {
             'btagDDCvLV2': {
                 'H' : {
                     'H':         {'c_cc': {'value' : 1, 'lo' : -2, 'hi' : 2}},
+                },
+            },
+        },
+    },
+
+    'newmodel_mergebbcc_ccbblmcstat': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'bb_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'bb_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'bb_cc': {'value' : 1, 'lo' : -20, 'hi' : 20}},
+                },
+            },
+        },
+    },
+
+    'newmodel_maxdxySig': {
+        '2016': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -10, 'hi' : 2}},
+                },
+            },
+            'btagDDBvLV2': {
+                'H' : {
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2017': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+            'btagDDBvLV2': {
+                'H' : {
+                    'H':         {'b_bb': {'value' : 1, 'lo' : 0, 'hi' : 2}},
+                },
+            },
+        },
+        '2018': {
+            'btagDDCvLV2': {
+                'H' : {
+                    'H':         {'c_cc': {'value' : 1, 'lo' : -10, 'hi' : 2}},
+                },
+            },
+            'btagDDBvLV2': {
+                'H' : {
+                    'H':         {'b_bb': {'value' : 1, 'lo' : -2, 'hi' : 2}},
                 },
             },
         },
