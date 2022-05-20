@@ -41,6 +41,7 @@ parser.add_argument('--passonly', action='store_true', default=False, help='Fit 
 parser.add_argument('--debug', action='store_true', default=False, help='Activate debug printout', required=False)
 parser.add_argument('--crop', action='store_true', default=False, help='Produce cropped plots in dedicated sub-directories', required=False)
 parser.add_argument('--mergebbcc', action='store_true', default=False, help='Merge bb+cc')
+parser.add_argument('--splitflavor', action='store_true', default=False, help='Split b+bb and c+cc into b, bb, c, cc')
 
 args = parser.parse_args()
 pt_interval = PtBinning[args.campaign][args.year]
@@ -203,9 +204,15 @@ for tagger in taggers:
                 flavors = ['l', 'bb_cc']
             else:
                 if (('DDB' in tagger) | ('Xbb' in tagger)):
-                    flavors = ['l', 'c_cc', 'b_bb']
+                    if args.splitflavor:
+                        flavors = ['l', 'c', 'cc', 'b', 'bb']
+                    else:
+                        flavors = ['l', 'c_cc', 'b_bb']
                 elif (('DDC' in tagger) | ('Xcc' in tagger)):
-                    flavors = ['l', 'b_bb', 'c_cc']
+                    if args.splitflavor:
+                        flavors = ['l', 'b', 'bb', 'c', 'cc']
+                    else:
+                        flavors = ['l', 'b_bb', 'c_cc']
                 else:
                     raise NotImplementedError
             flavor_opts['facecolor'] = [flavors_color[f.split('_')[-1]] for f in flavors]
@@ -336,6 +343,9 @@ for tagger in taggers:
                     hep.cms.lumitext(text=f'{totalLumi}' + r' fb$^{-1}$, 13 TeV,' + f' {args.year}', fontsize=fontsize, ax=axes[0][i])
                     hep.cms.text("Preliminary", ax=axes_normed[0][i], fontsize=fontsize)
                     hep.cms.lumitext(text=f'{totalLumi}' + r' fb$^{-1}$, 13 TeV,' + f' {args.year}', fontsize=fontsize, ax=axes_normed[0][i])
+                    if region == 'sffail':
+                        axes[0][i].ticklabel_format(axis='y', style='sci', scilimits=(5,5), useMathText=True)
+                        axes[0][i].get_yaxis().get_offset_text().set_position((-0.1,0.9))
                     pt_low, pt_high = pt_interval[wpt]
                     if pt_high == 'Inf':
                         pt_high = r'$\infty$'
