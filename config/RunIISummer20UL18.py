@@ -16,8 +16,8 @@ cfg =  {
     # Input and output files
     "workflow" : "fatjet_tagger",
     "input"    : "datasets/RunIISummer20UL18_local.json",
-    "output"   : "histograms/RunIISummer20UL18_FIXED_SV.coffea",
-    "plots"    : "plots/RunIISummer20UL18_FIXED_SV",
+    "output"   : "histograms/RunIISummer20UL18_FIXED_particleNet.coffea",
+    "plots"    : "plots/RunIISummer20UL18_FIXED_particleNet",
 
     # Executor parameters
     "run_options" : {
