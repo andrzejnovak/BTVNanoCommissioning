@@ -19,6 +19,10 @@ jobs:
       matrix:
         python-version: [3.7, 3.8, 3.9]
 
+    defaults:
+      run:
+        shell: "bash -l {0}"
+
     steps:
     - uses: actions/checkout@v2
 
@@ -31,13 +35,12 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        activate-environment: btv_nano_commissioning
         python-version: ${{ matrix.python-version }}
+        activate-environment: btv_nano_commissioning
 
     - name: Install Dependencies
     # might not be needed for local tests
       run: |
-        conda activate btv_nano_commissioning
         conda info
         pip install git+https://github.com/CoffeaTeam/coffea.git
         conda install -c conda-forge voms
