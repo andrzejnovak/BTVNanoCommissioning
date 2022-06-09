@@ -47,6 +47,18 @@ jobs:
         conda install dask
         pip install -e .
 
+    - name: Setting up grid proxy
+    # https://awesome-workshop.github.io/gitlab-cms/03-vomsproxy/index.html
+      run: |
+        mkdir -p ${HOME}/.globus
+        printf "${GRID_USERCERT}" | base64 -d > ${HOME}/.globus/usercert.pem
+        printf "${GRID_USERKEY}" | base64 -d > ${HOME}/.globus/userkey.pem
+        ls ${HOME}/.globus/
+        chmod 400 ${HOME}/.globus/userkey.pem
+        printf "${GRID_PASSWORD}" | base64 -d | voms-proxy-init --voms cms --pwstdin
+        voms-proxy-info --all
+
     - name: Run workflow
       run: |
-        python runner.py --workflow ttcom --json metadata/test.json 
+        python runner.py --workflow ttcom --json metadata/test.json  --limit 1 --only TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8
+
