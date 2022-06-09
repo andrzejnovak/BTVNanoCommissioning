@@ -37,8 +37,10 @@ jobs:
     - name: Install Dependencies
     # might not be needed for local tests
       run: |
+        # conda activate btv_nano_commissioning
         pip install git+https://github.com/CoffeaTeam/coffea.git
         conda install -c conda-forge voms
+        conda install -c conda-forge voms-clients 
         conda install -c conda-forge xrootd
         conda install -c conda-forge ca-certificates
         conda install -c conda-forge ca-policy-lcg
@@ -47,6 +49,7 @@ jobs:
         conda install -c conda-forge 'fsspec>=0.3.3'
         conda install dask
         pip install -e .
+        conda info
 
     - name: Setting up grid proxy
     # https://awesome-workshop.github.io/gitlab-cms/03-vomsproxy/index.html
