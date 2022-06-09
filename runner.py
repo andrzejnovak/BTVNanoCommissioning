@@ -67,10 +67,10 @@ if __name__ == '__main__':
         wrk_init = [
             f'export X509_USER_PROXY={_x509_path}',
             f'export X509_CERT_DIR={os.environ["X509_CERT_DIR"]}',
-            'source /etc/profile.d/conda.sh',
-            'export PATH=$CONDA_PREFIX/bin:$PATH',
-            'conda activate btv',
-            'cd /afs/cern.ch/work/m/mmarcheg/BTVNanoCommissioning/',
+            # 'source /etc/profile.d/conda.sh',
+            # 'export PATH=$CONDA_PREFIX/bin:$PATH',
+            'conda activate coffea',
+            # 'cd /afs/cern.ch/work/m/mmarcheg/BTVNanoCommissioning/',
         ]
 
         condor_cfg = '''
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                             channel=LocalChannel(script_dir='logs_parsl'),
                             launcher=SrunLauncher(),
                             #launcher=SingleNodeLauncher(),
-                            max_blocks=(config.run_options['scaleout'])+10,
+                            max_blocks=(config.run_options['scaleout'])+2,
                             init_blocks=config.run_options['scaleout'],
                             #partition='long',
                             partition=config.run_options['partition'],
@@ -158,7 +158,7 @@ if __name__ == '__main__':
                         provider=CondorProvider(
                             channel=LocalChannel(script_dir='logs_parsl'),
                             launcher=SingleNodeLauncher(),
-                            max_blocks=(config.run_options['scaleout'])+10,
+                            max_blocks=(config.run_options['scaleout'])+2,
                             init_blocks=config.run_options['scaleout'],
                             worker_init="\n".join(wrk_init),
                             #transfer_input_files=xfer_files,

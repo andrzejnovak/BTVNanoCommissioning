@@ -15,22 +15,23 @@ cfg =  {
 
     # Input and output files
     "workflow" : "fatjet_tagger_ggHcc",
-    "input"    : "datasets/RunIIFall17EOY17_local.json",
+    "input"    : "datasets/RunIIFall17EOY17_max.json",
     "output"   : "histograms/RunIIFall17EOY17.coffea",
     "plots"    : "plots/RunIIFall17EOY17",
 
     # Executor parameters
     "run_options" : {
         "executor"       : "parsl/slurm",
-        "workers"        : 12,
-        "scaleout"       : 10,
-        "partition"      : "standard",
-        "walltime"       : "12:00:00",
+        # "executor"       : "iterative",
+        "workers"        : None,
+        "scaleout"       : 4,
+        "partition"      : None,
+        "walltime"       : "4:00:00",
         "mem_per_worker" : None, # GB
         "exclusive"      : True,
-        "chunk"          : 50000,
+        "chunk"          : 200000,
         "max"            : None,
-        "skipbadfiles"   : None,
+        "skipbadfiles"   : True,
         "voms"           : None,
         "limit"          : None,
     },

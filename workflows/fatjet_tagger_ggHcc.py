@@ -70,7 +70,9 @@ class NanoProcessor(processor.ProcessorABC):
         # Define axes
         # Should read axes from NanoAOD config
         dataset_axis = hist.Cat("dataset", "Primary dataset")
-        flavor_axis  = hist.Cat("flavor",   "Flavor")
+        # flavor_axis  = hist.Cat("flavor",   "Flavor")
+        flavor_axis = hist.Bin("flavor", "Flavor", [0,1,2,3,4,5,6])
+        region_axis  = hist.Cat("region",   "Region")
 
         # Events
         #nel_axis     = hist.Bin("nel",   r"N electrons",     [0,1,2,3,4,5,6,7,8,9,10])
@@ -108,6 +110,8 @@ class NanoProcessor(processor.ProcessorABC):
         fatjet_phi_axis   = hist.Bin("phi",  r"lead. FatJet $\phi$", 60, -np.pi, np.pi)
         fatjet_mass_axis  = hist.Bin("mass", r"lead. FatJet $m_{SD}$ [GeV]", 1000, 0, 1000)
         fatjet_jetproba_axis = hist.Bin("Proba", r"lead. FatJet JP", 50, 0, 2.5)
+        # fatjet_btagDDCvLV2_axis = hist.Bin("btagDDCvLV2", r"lead. FatJet DDCvL v2", 50, 0, 1)
+        fatjet_btagDDCvLV2_axis = hist.Bin("btagDDCvLV2", r"lead. FatJet DDCvL v2", np.r_[np.linspace(0, 0.2, 15), np.geomspace(0.2, 1, 50)])
         #fatjet_vertexmass_axis  = hist.Bin("vertexmass", r"lead. FatJet tau1 vertex $m_{SD}$ [GeV]", 1000, 0, 1000)
 
         # SV
@@ -159,7 +163,7 @@ class NanoProcessor(processor.ProcessorABC):
                 'fatjet_nsv1'   : hist.Hist("Events", dataset_axis, flavor_axis, nsv1_axis),
                 'fatjet_nsv2'   : hist.Hist("Events", dataset_axis, flavor_axis, nsv2_axis),
                 'fatjet_jetproba' : hist.Hist("Events", dataset_axis, flavor_axis, fatjet_jetproba_axis),
-                #'fatjet_DDX_tau1_vertexMass' : hist.Hist("Events", dataset_axis, flavor_axis, fatjet_vertexmass_axis),
+                #'fatjet_DDX_tau1_vertexMass' : hist.Hist("Events", dataset_axis, flavor_axis,  ),
             }
         _hist_sv_dict = {
                 'sv_sv1mass'              : hist.Hist("Events", dataset_axis, flavor_axis, sv_sv1mass_axis),
@@ -169,6 +173,12 @@ class NanoProcessor(processor.ProcessorABC):
                 'sv_logsv1massratio'      : hist.Hist("Events", dataset_axis, flavor_axis, sv_logsv1massratio_axis),
                 'sv_logsv1massres'        : hist.Hist("Events", dataset_axis, flavor_axis, sv_logsv1massres_axis),
             }
+
+        _hist_nd_dict = {
+            'nd_sv_logsv1mass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logsv1mass_axis),
+            'nd_sv_logsv1mass_maxdxySig': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logsv1mass_maxdxySig_axis),
+            'nd_jp': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, fatjet_jetproba_axis),
+        }
 
         for (i, disc) in enumerate(disc_list_fj):
             _hist_fatjet_dict['fatjet_' + disc] = hist.Hist("Events", dataset_axis, flavor_axis, btag_axes_fj[i])
@@ -206,6 +216,7 @@ class NanoProcessor(processor.ProcessorABC):
         self.fatjet_hists = list(_hist_fatjet_dict.keys())
         self.sv_hists = list(_hist_sv_dict.keys())
         self.event_hists = list(_hist_event_dict.keys())
+        self.nd_hists = list(_hist_nd_dict.keys())
 
         #_hist_dict = {**_hist_jet_dict, **_hist_fatjet_dict, **_hist2d_dict, **_hist_event_dict, **_sumw_dict}
         if self.hist2d:
@@ -214,6 +225,7 @@ class NanoProcessor(processor.ProcessorABC):
             self._hist_dict = {**_hist_muon_dict, **_hist_fatjet_dict, **_hist_sv_dict, **_hist_event_dict}
         self.append_mask()
         self._hist_dict.update({**_sumw_dict})
+        self._hist_dict.update({**_hist_nd_dict})
         self._accumulator = processor.dict_accumulator(self._hist_dict)
         if self.checkOverlap:
             for var in self.eventTags.keys():
@@ -295,7 +307,7 @@ class NanoProcessor(processor.ProcessorABC):
         '''Based on https://github.com/andrzejnovak/coffeandbacon/blob/master/analysis/compile_corrections.py#L166-L192'''
 
         nTrueIntLoad = load(nTrueFile)
-        print([y for x,y in nTrueIntLoad[dataset].sum('dataset').values().items()])
+        # print([y for x,y in nTrueIntLoad[dataset].sum('dataset').values().items()])
         nTrueInt = [y for x,y in nTrueIntLoad[dataset].sum('dataset').values().items()][0]  ## not sure is the best way
 
         with uproot.open(puFile) as file_pu:
@@ -325,7 +337,7 @@ class NanoProcessor(processor.ProcessorABC):
 
         jec_inputs = {name: evaluator[name] for name in jec_stack_names}
         corrector = FactorizedJetCorrector( **jec_inputs )
-        for i in jec_inputs: print(i,'\n',evaluator[i])
+        # for i in jec_inputs: print(i,'\n',evaluator[i])
 
         #print(dir(evaluator))
         #print()
@@ -436,7 +448,10 @@ class NanoProcessor(processor.ProcessorABC):
         # Basic cuts
         ## Muon cuts
         # muon twiki: https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
-        events.Muon = events.Muon[(events.Muon.pt > self.mupt) & (abs(events.Muon.eta < 2.4)) & (events.Muon.tightId != 1) & (events.Muon.pfRelIso04_all > 0.15)]
+        events.Muon = events.Muon[(events.Muon.pt > self.mupt)
+                                  & (abs(events.Muon.eta < 2.4)) &
+                                  (events.Muon.tightId != 1) &
+                                  (events.Muon.pfRelIso04_all > 0.15)]
         events.Muon = ak.pad_none(events.Muon, 2, axis=1)
 
         ## Jet cuts  (not used)
@@ -516,6 +531,55 @@ class NanoProcessor(processor.ProcessorABC):
         else:
             flavors['Data'] = np.ones(len(events), dtype='bool')
 
+        fl_conv_dict = {
+            "bb" : 5,
+            "cc" : 4,
+            "b" : 3,
+            "c" : 2,
+            "l" : 1,
+            "Data" : 0,
+        }
+
+        def getBosons(genparticles):
+            absid = abs(genparticles.pdgId)
+            return genparticles[
+                # with gluons
+                (absid >= 9)
+                & (absid <= 25)
+                & genparticles.hasFlags(['fromHardProcess', 'isLastCopy'])
+            ]
+
+        def btvflavor(fatjet, bosons=None, reduce=False):
+            if bosons is not None:
+                matched_bosons = fatjet.nearest(bosons, threshold=0.8)
+                is_boson = ak.fill_none(matched_bosons.pt*0 + 1, 0) == 1
+            else:
+                is_boson = np.ones_like(fatjet.pt) > 0 # Dummy values
+            if reduce:
+                _b = (fatjet.hadronFlavour == 5) & is_boson
+                _c = (fatjet.hadronFlavour == 4) & is_boson
+                _l = (fatjet.hadronFlavour < 4) & is_boson
+                flavor = _b * 3 + _c * 2 + _l * 1
+            else:
+                _bb = (fatjet.hadronFlavour == 5) & (fatjet.nBHadrons >= 2) & is_boson
+                _cc = (fatjet.hadronFlavour == 4) & (fatjet.nCHadrons >= 2) & (fatjet.nBHadrons == 0) & is_boson
+                _b = (fatjet.hadronFlavour == 5) & (~_bb) & is_boson
+                _c = (fatjet.hadronFlavour == 4) & (~_cc) & is_boson
+                _l = ~_bb & ~_cc & ~_b & ~_c & is_boson
+                _0 = ~is_boson
+                flavor = _bb*5 + _cc*4 + _b*3 + _c*2 + _l*1 + _0 * 0
+                check = _bb*1 + _cc*1 + _b*1 + _c*1 + _l*1 + _0 * 1
+                assert np.mean(ak.flatten(check, axis=None)) == 1.
+
+            return flavor
+
+        # flav = btvflavor(events.FatJet, bosons=getBosons(events.GenPart))
+        if not isRealData:
+            flav = btvflavor(leadfatjet, bosons=None)
+        else:
+            flav = np.zeros_like(leadfatjet.pt)
+        leadfatjet['flavor'] = flav
+
         for selname, cut in self._mask_fatjets.items():
 
             sel = (leadfatjet.pt > cut['pt_cut']) & \
@@ -547,6 +611,7 @@ class NanoProcessor(processor.ProcessorABC):
 
 
         for histname, h in output.items():
+            # print(histname)
             sel = [mask + histname.split(mask)[-1] for mask in self._mask_fatjets.keys() if mask in histname]
             if histname in self.muon_hists:
                 #print('array printout:', np.array(list(muonCollection.keys())))
@@ -556,22 +621,29 @@ class NanoProcessor(processor.ProcessorABC):
                 for flav, mask in flavors.items():
                     weight = weights.weight() * cuts.all(*selection[sel[0]]) * ak.to_numpy(mask)
                     fields = {k: ak.fill_none(muon[k], -9999) for k in h.fields if k in dir(muon)}
-                    h.fill(dataset=self._sample, flavor=flav, **fields, weight=weight)
+                    h.fill(dataset=self._sample, flavor=fl_conv_dict[flav], **fields, weight=weight)
             if ((histname in self.fatjet_hists) | ('hist2d_fatjet' in histname)):
                 for flav, mask in flavors.items():
                     weight = weights.weight() * cuts.all(*selection[sel[0]]) * ak.to_numpy(mask)
                     fields = {k: ak.fill_none(leadfatjet[k], -9999) for k in h.fields if k in dir(leadfatjet)}
-                    h.fill(dataset=self._sample, flavor=flav, **fields, weight=weight)
+                    h.fill(dataset=self._sample, **fields, weight=weight)
             if histname in self.event_hists:
                 for flav, mask in flavors.items():
                     weight = weights.weight() * cuts.all(*selection[sel[0]]) * ak.to_numpy(mask)
                     fields = {k: ak.fill_none(eventVariables[k], -9999) for k in h.fields if k in eventVariables.keys() }
-                    h.fill(dataset=self._sample, flavor=flav, **fields, weight=weight)
+                    h.fill(dataset=self._sample, flavor=fl_conv_dict[flav], **fields, weight=weight)
             if ((histname in self.sv_hists) | ('hist2d_sv' in histname)):
                 for flav, mask in flavors.items():
                     weight = weights.weight() * cuts.all(*selection[sel[0]]) * ak.to_numpy(mask)
                     fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
-                    h.fill(dataset=self._sample, flavor=flav, **fields, weight=weight)
+                    h.fill(dataset=self._sample, flavor=fl_conv_dict[flav],  **fields, weight=weight)
+            if histname in self.nd_hists:
+                for _region in ['basic', 'msd100tau06', 'msd100tau06ggHcc']:
+                    weight = weights.weight() * cuts.all(*selection[_region])
+                    fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
+                    fields.update(**{k: ak.fill_none(leadfatjet[k], -9999) for k in h.fields if k in dir(leadfatjet)})
+                    # print("X", fields)
+                    h.fill(dataset=self._sample, **fields, region=_region, weight=weight)
 
         #if isRealData & (self.checkOverlap is not None):
         if self.checkOverlap:
@@ -588,7 +660,7 @@ class NanoProcessor(processor.ProcessorABC):
 
         if self.checkOverlap:
             mask = self._final_mask[0]
-            self.checkOverlap = self.checkOverlap.replace('.txt', f'_{mask}.txt')            
+            self.checkOverlap = self.checkOverlap.replace('.txt', f'_{mask}.txt')
             run = accumulator['run'].value
             lumi = accumulator['lumi'].value
             event = accumulator['event'].value

@@ -2,7 +2,7 @@ cfg =  {
     # Dataset parameters
     "dataset"  : "datasets/DAS/datasets_btag2016EOY.txt",
     "json"     : "datasets/RunIISummer16EOY16.json",
-    "storage_prefix" : "/pnfs/psi.ch/cms/trivcat/store/user/mmarcheg/BTVNanoCommissioning",
+    "storage_prefix" : "/beegfs/desy/group/af-cms/ddc/PFNano/downloads",
     "campaign" : "EOY",
     "year"     : "2016",
 
@@ -14,18 +14,18 @@ cfg =  {
     "JECfolder": "correction_files/tmp",
 
     # Input and output files
-    "workflow" : "fatjet_tagger",
+    "workflow" : "fatjet_tagger_ggHcc",
     "input"    : "datasets/RunIISummer16EOY16_local.json",
-    "output"   : "histograms/RunIISummer16EOY16_noDDCvBcut.coffea",
+    "output"   : "histograms/RunIISummer16EOY16.coffea",
     "plots"    : "plots/RunIISummer16EOY16",
 
     # Executor parameters
     "run_options" : {
         "executor"       : "parsl/slurm",
-        "workers"        : 12,
-        "scaleout"       : 10,
-        "partition"      : "standard",
-        "walltime"       : "12:00:00",
+        "workers"        : None,
+        "scaleout"       : 4,
+        "partition"      : None, 
+        "walltime"       : "4:00:00",
         "mem_per_worker" : None, # GB
         "exclusive"      : True,
         "chunk"          : 50000,

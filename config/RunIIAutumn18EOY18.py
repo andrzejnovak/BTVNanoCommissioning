@@ -16,19 +16,19 @@ cfg =  {
     # Input and output files
     "workflow" : "fatjet_tagger_ggHcc",
     "input"    : "datasets/RunIIAutumn18EOY18_local.json",
-    "output"   : "histograms/RunIIAutumn18EOY18_FIXED_Pt-470to600.coffea",
-    "plots"    : "plots/RunIIAutumn18EOY18_FIXED_Pt-470to600",
+    "output"   : "histograms/RunIIAutumn18EOY18.coffea",
+    "plots"    : "plots/RunIIAutumn18EOY18_local",
 
     # Executor parameters
     "run_options" : {
         "executor"       : "parsl/slurm",
-        "workers"        : 12,
-        "scaleout"       : 10,
-        "partition"      : "standard",
-        "walltime"       : "12:00:00",
+        "workers"        : None,
+        "scaleout"       : 4,
+        "partition"      : None,
+        "walltime"       : "4:00:00",
         "mem_per_worker" : None, # GB
         "exclusive"      : True,
-        "chunk"          : 50000,
+        "chunk"          : 250000,
         "max"            : None,
         "skipbadfiles"   : None,
         "voms"           : None,
