@@ -37,7 +37,7 @@ jobs:
     - name: Install Dependencies
     # might not be needed for local tests
       run: |
-        # conda activate btv_nano_commissioning
+        conda activate btv_nano_commissioning
         conda info
         pip install git+https://github.com/CoffeaTeam/coffea.git
         conda install -c conda-forge voms
