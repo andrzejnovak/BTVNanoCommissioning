@@ -38,6 +38,7 @@ jobs:
     # might not be needed for local tests
       run: |
         pip install git+https://github.com/CoffeaTeam/coffea.git
+        conda install -c conda-forge voms
         conda install -c conda-forge xrootd
         conda install -c conda-forge ca-certificates
         conda install -c conda-forge ca-policy-lcg
