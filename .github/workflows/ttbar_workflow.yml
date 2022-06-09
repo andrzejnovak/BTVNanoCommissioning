@@ -2,13 +2,13 @@ name: TTbar
 
 on:
   push:
-    branches: [ CI ]
+    branches: [ master ]
   pull_request:
-    branches: [ CI ]
-  workflow_run:
-    workflows: ["Linting"]
-    types:
-      - completed
+    branches: [ master ]
+  #workflow_run:
+  #  workflows: ["Linting"]
+  #  types:
+  #    - completed
 
 jobs:
   build:
