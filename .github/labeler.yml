@@ -1,0 +1,13 @@
+# Add 'repo' label to any root file changes
+repo:
+- '*'
+
+CI:
+- .github/workflows/*
+
+core:
+- src/BTVNanoCommissioning/*
+
+runner:
+- runner.py
+
