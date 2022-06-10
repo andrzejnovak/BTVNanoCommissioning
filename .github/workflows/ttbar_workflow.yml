@@ -5,10 +5,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  #workflow_run:
-  #  workflows: ["Linting"]
-  #  types:
-  #    - completed
 
 jobs:
   build:
@@ -25,52 +21,60 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        cvmfs_repositories: 'grid.cern.ch'
 
-    - name: Set up miniconda
+    - name: Set conda environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-        activate-environment: btv_nano_commissioning
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        auto-update-conda: true
+        activate-environment: btv_coffea
+        environment-file: test_env.yml
+        auto-activate-base: false
 
-    - name: Install Dependencies
-    # might not be needed for local tests
+    - name: Verify environment
       run: |
         conda info
-        pip install git+https://github.com/CoffeaTeam/coffea.git
-        conda install -c conda-forge voms
-        # conda install -c conda-forge voms-clients 
-        conda install -c conda-forge xrootd
-        conda install -c conda-forge ca-certificates
-        conda install -c conda-forge ca-policy-lcg
-        conda install -c conda-forge dask-jobqueue
-        conda install -c anaconda bokeh 
-        conda install -c conda-forge 'fsspec>=0.3.3'
-        conda install dask
-        pip install -e .
         conda list
 
-    - name: Setting up grid proxy
-    # https://awesome-workshop.github.io/gitlab-cms/03-vomsproxy/index.html
+    - name: Install Repo
       run: |
-        mkdir -p ${HOME}/.globus
-        printf "${{secrets.GRID_USERCERT}}" | base64 -d > ${HOME}/.globus/usercert.pem
-        printf "${{secrets.GRID_USERKEY}}" | base64 -d > ${HOME}/.globus/userkey.pem
-        echo "Checking content of .globus"
-        ls -ll ${HOME}/.globus/
-        chmod 400 ${HOME}/.globus/userkey.pem
-        touch ${HOME}/.rnd
-        echo "Running voms-proxy-init"
-        printf "${{secrets.GRID_PASSWORD}}" | voms-proxy-init --voms cms --pwstdin
-        echo "voms-proxy-init ran succesfully"
-        voms-proxy-info --all
-
+        pip install -e .
+        
+    - name: Set up proxy
+      # https://awesome-workshop.github.io/gitlab-cms/03-vomsproxy/index.html
+      # continue-on-error: true
+      env:
+        ## To genereate secrets use (strip all \n)
+        # base64 -i ~/.globus/usercert.pem | awk -vORS="" '1' 
+        # base64 -i ~/.globus/userkey.pem | awk -vORS="" '1' 
+        ## Cross check roundtrip by adding ``| base64 -d `` and see if same as input
+        DEBUG_USERKEY: ${{ secrets.GRID_USERKEY }}
+        DEBUG_USERCERT: ${{ secrets.GRID_USERCERT }}
+        # Read automatically by voms-proxy-init
+        X509_VOMS_DIR: /cvmfs/grid.cern.ch/etc/grid-security/vomsdir/
+        X509_VOMSES: /cvmfs/grid.cern.ch/etc/grid-security/vomses/
+        X509_DEFAULT_USER_CERT: $HOME/.globus/usercert.pem
+        X509_DEFAULT_USER_KEY: $HOME/.globus/userkey.pem
+      run: |
+        mkdir $HOME/.globus
+        printf $DEBUG_USERKEY | base64 -d > $HOME/.globus/userkey.pem
+        printf $DEBUG_USERCERT | base64 -d > $HOME/.globus/usercert.pem
+        # DEBUG: dump decoded cert, cert is public, but don't dump key!
+        # base64 -i $HOME/.globus/usercert.pem
+        chmod 400 $HOME/.globus/userkey.pem
+        openssl rand -out $HOME/.rnd  -hex 256
+        printf "${{secrets.GRID_PASSWORD}}" | voms-proxy-init --voms cms:/cms/dcms --vomses ${X509_VOMSES} --debug --pwstdin
+        
+    - name: Test xrd
+      run: |
+        xrdcp root://xrootd-cms.infn.it///store/user/anovak/PFNano/106X_v2_17/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17PFNanoAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1PFNanoV2/210101_174326/0001/nano_mc2017_1-1664.root .
+        
     - name: Run workflow
       run: |
-        python runner.py --workflow ttcom --json metadata/test.json  --limit 1 --only TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8
-
+        python runner.py --workflow ttcom --json metadata/test.json  --limit 1 --only TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8 --executor iterative
