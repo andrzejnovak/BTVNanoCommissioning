@@ -66,7 +66,7 @@ jobs:
         # touch ${HOME}/.rnd
         echo "Running voms-proxy-init"
         #printf "${{secrets.GRID_PASSWORD}}" | base64 -d | voms-proxy-init --voms cms --pwstdin
-        echo "${{secrets.GRID_PASSWORD}}" | base64 -d | voms-proxy-init --voms cms --pwstdin
+        echo "${{secrets.GRID_PASSWORD}}" | voms-proxy-init --voms cms --pwstdin
         echo "voms-proxy-init ran succesfully"
         voms-proxy-info --all
 
