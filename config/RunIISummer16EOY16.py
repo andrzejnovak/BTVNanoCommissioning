@@ -30,7 +30,7 @@ cfg =  {
         "exclusive"      : True,
         "chunk"          : 50000,
         "max"            : None,
-        "skipbadfiles"   : None,
+        "skipbadfiles"   : True,
         "voms"           : None,
         "limit"          : None,
     },

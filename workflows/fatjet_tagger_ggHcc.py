@@ -44,6 +44,38 @@ class NanoProcessor(processor.ProcessorABC):
                 'mass_cut' : 100.,
                 'tau21_cut' : 0.6,
                 'DDCvB_cut' : 0.03
+                    },            
+            'msd60tau06' : {
+                'pt_cut' : 350.,
+                'eta_cut': 2.4,
+                'jetId_cut': 2,
+                'mass_cut' : 60.,
+                'tau21_cut' : 0.6,
+                'DDCvB_cut' : -1
+                    },
+            'msd60tau06ggHcc' : {
+                'pt_cut' : 350.,
+                'eta_cut': 2.4,
+                'jetId_cut': 2,
+                'mass_cut' : 60.,
+                'tau21_cut' : 0.6,
+                'DDCvB_cut' : 0.03
+                    },
+            'msd40tau06' : {
+                'pt_cut' : 350.,
+                'eta_cut': 2.4,
+                'jetId_cut': 2,
+                'mass_cut' : 40.,
+                'tau21_cut' : 0.6,
+                'DDCvB_cut' : -1
+                    },
+            'msd40tau06ggHcc' : {
+                'pt_cut' : 350.,
+                'eta_cut': 2.4,
+                'jetId_cut': 2,
+                'mass_cut' : 40.,
+                'tau21_cut' : 0.6,
+                'DDCvB_cut' : 0.03
                     },
         }
         self._final_mask = FinalMask
@@ -87,6 +119,7 @@ class NanoProcessor(processor.ProcessorABC):
 
         # Muon
         leadmuon_pt_axis   = hist.Bin("pt",   r"lead. Muon $p_{T}$ [GeV]", 200, 0, 200)
+        dimuon_mass_axis   = hist.Bin("mass",   r"Di-Muon mass [GeV]", 200, 0, 200)
         #leadmuon_eta_axis  = hist.Bin("eta",  r"lead. Muon $\eta$", 60, -3, 3)
         #leadmuon_phi_axis  = hist.Bin("phi",  r"lead. Muon $\phi$", 60, -np.pi, np.pi)
         subleadmuon_pt_axis   = hist.Bin("pt",   r"sublead. Muon $p_{T}$ [GeV]", 200, 0, 200)
@@ -111,12 +144,16 @@ class NanoProcessor(processor.ProcessorABC):
         fatjet_mass_axis  = hist.Bin("mass", r"lead. FatJet $m_{SD}$ [GeV]", 1000, 0, 1000)
         fatjet_jetproba_axis = hist.Bin("Proba", r"lead. FatJet JP", 50, 0, 2.5)
         # fatjet_btagDDCvLV2_axis = hist.Bin("btagDDCvLV2", r"lead. FatJet DDCvL v2", 50, 0, 1)
-        fatjet_btagDDCvLV2_axis = hist.Bin("btagDDCvLV2", r"lead. FatJet DDCvL v2", np.r_[np.linspace(0, 0.2, 15), np.geomspace(0.2, 1, 50)])
+        fatjet_btagDDCvLV2_axis = hist.Bin("btagDDCvLV2", r"lead. FatJet DDCvL v2", np.r_[np.linspace(0, 0.2, 15)[:-1], np.geomspace(0.2, 1, 50)])
         #fatjet_vertexmass_axis  = hist.Bin("vertexmass", r"lead. FatJet tau1 vertex $m_{SD}$ [GeV]", 1000, 0, 1000)
 
         # SV
         sv_sv1mass_axis             = hist.Bin("sv1mass", r"lead. FatJet $m_{SV,1}$ [GeV]", 1000, 0, 1000)
-        sv_logsv1mass_axis          = hist.Bin("logsv1mass", r"lead. FatJet log($m_{SV,1}$/GeV)", 80, -4, 4)
+        sv_logsv1mass_axis          = hist.Bin("logsv1mass", r"lead. FatJet log($m_{SV,1}$/GeV)", 80, -2.5, 4)
+        sv_summass_axis             = hist.Bin("summass", r"lead. FatJet $\sum({m_{SV}})$ [GeV]", 1000, 0, 1000)
+        sv_logsummass_axis          = hist.Bin("logsummass", r"lead. FatJet log($\sum({m_{SV}})$) [GeV]", 100, -2.5, 6)
+        sv_projmass_axis             = hist.Bin("projmass", r"lead. FatJet $m_{SV}^{proj}$ [GeV]", 1000, 0, 1000)
+        sv_logprojmass_axis          = hist.Bin("logprojmass", r"lead. FatJet log($m_{SV}^{proj}$) [GeV]", 100, -2.5, 6)
         sv_sv1mass_maxdxySig_axis    = hist.Bin("sv1mass_maxdxySig", r"lead. FatJet $m_{SV,1~for~max(\sigma_{d_{xy}})}$ [GeV]", 1000, 0, 1000)
         sv_logsv1mass_maxdxySig_axis = hist.Bin("logsv1mass_maxdxySig", r"lead. FatJet log($m_{SV,1~for~max(\sigma_{d_{xy}})}$/GeV)", 80, -4, 4)
         sv_logsv1massratio_axis     = hist.Bin("logsv1massratio", r"log($m_{SV_1~for~max(\sigma_{d_{xy}})}$/GeV) / log($m_{SV,1~for~max(p_T)}$/GeV)", 200, -100, 100)
@@ -135,6 +172,7 @@ class NanoProcessor(processor.ProcessorABC):
         # Define histograms from axes
         _hist_muon_dict = {
                 'leadmuon_pt'  : hist.Hist("Events", dataset_axis, flavor_axis, leadmuon_pt_axis),
+                'dimuon_mass'  : hist.Hist("Events", dataset_axis, flavor_axis, dimuon_mass_axis),
                 #'leadmuon_eta' : hist.Hist("Events", dataset_axis, flavor_axis, leadmuon_eta_axis),
                 #'leadmuon_phi' : hist.Hist("Events", dataset_axis, flavor_axis, leadmuon_phi_axis),
                 'subleadmuon_pt'  : hist.Hist("Events", dataset_axis, flavor_axis, subleadmuon_pt_axis),
@@ -177,6 +215,11 @@ class NanoProcessor(processor.ProcessorABC):
         _hist_nd_dict = {
             'nd_sv_logsv1mass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logsv1mass_axis),
             'nd_sv_logsv1mass_maxdxySig': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logsv1mass_maxdxySig_axis),
+            'nd_summass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_summass_axis),
+            'nd_logsummass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logsummass_axis),
+            'nd_projmass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_projmass_axis),
+            'nd_logprojmass': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, sv_logprojmass_axis),
+
             'nd_jp': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, fatjet_jetproba_axis),
         }
 
@@ -408,6 +451,7 @@ class NanoProcessor(processor.ProcessorABC):
                 METFilters = METFilters + [ 'eeBadScFilter', 'ecalBadCalibFilter']
         if self._campaign.startswith('EOY') and isRealData: METFilters.append('eeBadScFilter')
         for imet in METFilters: events = events[ getattr( events.Flag, imet )==1 ]
+        if len(events) == 0: return output
 
         ############
         # Some corrections
@@ -477,12 +521,23 @@ class NanoProcessor(processor.ProcessorABC):
         subjet2 = ak.pad_none(leadfatjet.subjets, 2)[:, 1]
         leadfatjet['nsv1'] = get_nsv( subjet1, events.SV )
         leadfatjet['nsv2'] = get_nsv( subjet2, events.SV )
-        leadfatjet['nmusj1'] = ak.num(subjet1.delta_r(events.Muon) < 0.4)
-        leadfatjet['nmusj2'] = ak.num(subjet2.delta_r(events.Muon) < 0.4)
-        leadmuonsj1 = ak.pad_none(events.Muon[subjet1.delta_r(events.Muon) < 0.4], 1)[:,0]
-        leadmuonsj2 = ak.pad_none(events.Muon[subjet2.delta_r(events.Muon) < 0.4], 1)[:,0]
+        leadfatjet['nmusj1'] = ak.sum(subjet1.delta_r(events.Muon) < 0.4, axis=1)
+        leadfatjet['nmusj2'] = ak.sum(subjet2.delta_r(events.Muon) < 0.4, axis=1)
+        leadmuonsj1 = subjet1.nearest(events.Muon, threshold=0.4)[:, 0]
+        leadmuonsj2 = subjet2.nearest(events.Muon, threshold=0.4)[:, 0]
+        dimuon = ak.pad_none(events.Muon, 2)[:, 0] + ak.pad_none(events.Muon, 2)[:, 1]
+        dimuon['mass'] = dimuon.mass
         muonCollection = {'leadmuon' : leadmuon, 'subleadmuon' : subleadmuon,
-                          'leadmuonsj1' : leadmuonsj1, 'leadmuonsj2' : leadmuonsj2,}
+                          'leadmuonsj1' : leadmuonsj1, 'leadmuonsj2' : leadmuonsj2,
+                          'dimuon': dimuon}
+
+        # if not isRealData:
+        #     corrPt = load('pt_corr.coffea')
+        #     weights.add( 'pTcorr', corrPt(ak.fill_none(leadfatjet.pt, 0)))
+        # else:
+        #     print(leadfatjet.pt)
+        #     print(ak.ones_like(ak.fill_none(leadfatjet.pt, 0)))
+        #     weights.add( 'pTcorr', ak.ones_like(ak.fill_none(leadfatjet.pt, 0)))
 
         events.SV = events.SV[get_sv_in_jet(leadfatjet, events.SV)]
         i_maxPt     = ak.argsort(events.SV.pt, ascending=False)
@@ -491,9 +546,17 @@ class NanoProcessor(processor.ProcessorABC):
         try: events.SV[i_maxPt]
         except: return output
 
+        def project(a, b):
+            return a.dot(b)/b.dot(b) * b
+
         leadsv = ak.firsts(events.SV[i_maxPt])
         leadsv_dxySig = ak.firsts(events.SV[i_maxdxySig])
+        leadsv['summass'] = events.SV[i_maxPt].p4.sum().mass
+        leadsv['logsummass'] = np.log(events.SV[i_maxPt].p4.sum().mass)
+        leadsv['projmass'] = project(events.SV[i_maxPt].p4.sum(), leadfatjet).mass
+        leadsv['logprojmass'] = np.log(project(events.SV[i_maxPt].p4.sum(), leadfatjet).mass)
         leadsv['sv1mass'] = leadsv.mass
+        leadsv['logsv1mass'] = np.log(leadsv.mass)
         leadsv['logsv1mass'] = np.log(leadsv.mass)
         leadsv['sv1mass_maxdxySig'] = leadsv_dxySig.mass
         leadsv['logsv1mass_maxdxySig'] = np.log(leadsv_dxySig.mass)
@@ -595,6 +658,10 @@ class NanoProcessor(processor.ProcessorABC):
         selection['basic'] = { 'basic' }
         selection['msd100tau06'] = { 'trigger', 'fatjet_mutag', 'msd100tau06' }
         selection['msd100tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd100tau06ggHcc' }
+        selection['msd60tau06'] = { 'trigger', 'fatjet_mutag', 'msd60tau06' }
+        selection['msd60tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd60tau06ggHcc' }
+        selection['msd40tau06'] = { 'trigger', 'fatjet_mutag', 'msd40tau06' }
+        selection['msd40tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd40tau06ggHcc' }        
         for mask_f in self._final_mask:
             for tagger in self._AK8TaggerWP.keys():
                 for wp, cut in self._AK8TaggerWP[tagger].items():
@@ -614,9 +681,7 @@ class NanoProcessor(processor.ProcessorABC):
             # print(histname)
             sel = [mask + histname.split(mask)[-1] for mask in self._mask_fatjets.keys() if mask in histname]
             if histname in self.muon_hists:
-                #print('array printout:', np.array(list(muonCollection.keys())))
-                #print('list printout:', np.array(list(muonCollection.keys()))[[k in histname for k in muonCollection.keys()]])
-                muonKey = np.array(list(muonCollection.keys()))[[k in histname for k in muonCollection.keys()]][0]
+                muonKey = histname.split("_")[0]
                 muon = muonCollection[muonKey]
                 for flav, mask in flavors.items():
                     weight = weights.weight() * cuts.all(*selection[sel[0]]) * ak.to_numpy(mask)
@@ -638,7 +703,7 @@ class NanoProcessor(processor.ProcessorABC):
                     fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
                     h.fill(dataset=self._sample, flavor=fl_conv_dict[flav],  **fields, weight=weight)
             if histname in self.nd_hists:
-                for _region in ['basic', 'msd100tau06', 'msd100tau06ggHcc']:
+                for _region in ['basic', 'msd100tau06', 'msd100tau06ggHcc', 'msd60tau06', 'msd60tau06ggHcc', 'msd40tau06', 'msd40tau06ggHcc']:
                     weight = weights.weight() * cuts.all(*selection[_region])
                     fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
                     fields.update(**{k: ak.fill_none(leadfatjet[k], -9999) for k in h.fields if k in dir(leadfatjet)})

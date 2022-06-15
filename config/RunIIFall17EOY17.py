@@ -33,7 +33,8 @@ cfg =  {
         "max"            : None,
         "skipbadfiles"   : True,
         "voms"           : None,
-        "limit"          : None,
+        # "limit"          : None,
+        # "limit"          : 1,
     },
 
     # Processor parameters

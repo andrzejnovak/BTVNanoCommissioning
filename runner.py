@@ -44,6 +44,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run analysis on baconbits files using processor coffea files')
     # Inputs
     parser.add_argument('--cfg', default=os.getcwd() + "/config/test.py", help='Config file with parameters specific to the current run', required=True)
+    parser.add_argument('--merges', action='store_true', help='Turn on merging')
 
     args = parser.parse_args()
     config = Configurator(args.cfg)
@@ -111,7 +112,7 @@ if __name__ == '__main__':
             slurm_htex = Config(
                 executors=[
                     HighThroughputExecutor(
-                        label="coffea_parsl_slurm",
+                        label="jobs",
                         address=address_by_hostname(),
                         prefetch_capacity=0,
                         mem_per_worker=config.run_options['mem_per_worker'],
@@ -127,23 +128,53 @@ if __name__ == '__main__':
                             walltime=config.run_options['walltime'],
                             exclusive=config.run_options['exclusive'],
                         ),
-                    )
+                    ),
+                    HighThroughputExecutor(
+                        label="merges",
+                        address=address_by_hostname(),
+                        prefetch_capacity=0,
+                        worker_debug=True,
+                        provider=SlurmProvider(
+                            channel=LocalChannel(script_dir='logs_parsl'),
+                            launcher=SrunLauncher(),
+                            max_blocks=1,
+                            init_blocks=1,
+                            partition='all',
+                            # scheduler_options=sched_opts,   # Enter scheduler_options if needed
+                            worker_init="\n".join(env_extra) + "\nexport PYTHONPATH=$PYTHONPATH:$PWD", 
+                            walltime='03:00:00'
+                        ),
+                    ),
                 ],
                 retries=20,
             )
             dfk = parsl.load(slurm_htex)
-
-            output = processor.run_uproot_job(config.fileset,
-                                        treename='Events',
-                                        processor_instance=config.processor_instance,
-                                        executor=processor.parsl_executor,
-                                        executor_args={
-                                            'skipbadfiles':True,
-                                            'schema': processor.NanoAODSchema,
-                                            'config': None,
-                                        },
-                                        chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
-                                        )
+            if args.merges:
+                output = processor.run_uproot_job(config.fileset,
+                                    treename='Events',
+                                    processor_instance=config.processor_instance,
+                                    executor=processor.parsl_executor,
+                                    executor_args={
+                                        'skipbadfiles':True,
+                                        'schema': processor.NanoAODSchema,
+                                        'merging': True,
+                                        'merges_executors': ['merges'],
+                                        'jobs_executors': ['jobs'],
+                                        'config': None},
+                                    chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
+                                    )
+            else:
+                output = processor.run_uproot_job(config.fileset,
+                                            treename='Events',
+                                            processor_instance=config.processor_instance,
+                                            executor=processor.parsl_executor,
+                                            executor_args={
+                                                'skipbadfiles':True,
+                                                'schema': processor.NanoAODSchema,
+                                                'config': None,
+                                            },
+                                            chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
+                                            )
         elif 'condor' in config.run_options['executor']:
             #xfer_files = [process_worker_pool, _x509_path]
             #print(xfer_files)
@@ -170,7 +201,7 @@ if __name__ == '__main__':
                 #retries=20,
             )
             dfk = parsl.load(condor_htex)
-
+            print("YUP")
             output = processor.run_uproot_job(sample_dict,
                                         treename='Events',
                                         processor_instance=processor_instance,
