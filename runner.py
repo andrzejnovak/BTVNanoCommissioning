@@ -149,32 +149,17 @@ if __name__ == '__main__':
                 retries=20,
             )
             dfk = parsl.load(slurm_htex)
-            if args.merges:
-                output = processor.run_uproot_job(config.fileset,
-                                    treename='Events',
-                                    processor_instance=config.processor_instance,
-                                    executor=processor.parsl_executor,
-                                    executor_args={
-                                        'skipbadfiles':True,
-                                        'schema': processor.NanoAODSchema,
-                                        'merging': True,
-                                        'merges_executors': ['merges'],
-                                        'jobs_executors': ['jobs'],
-                                        'config': None},
-                                    chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
-                                    )
-            else:
-                output = processor.run_uproot_job(config.fileset,
-                                            treename='Events',
-                                            processor_instance=config.processor_instance,
-                                            executor=processor.parsl_executor,
-                                            executor_args={
-                                                'skipbadfiles':True,
-                                                'schema': processor.NanoAODSchema,
-                                                'config': None,
-                                            },
-                                            chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
-                                            )
+            output = processor.run_uproot_job(config.fileset,
+                                        treename='Events',
+                                        processor_instance=config.processor_instance,
+                                        executor=processor.parsl_executor,
+                                        executor_args={
+                                            'skipbadfiles':True,
+                                            'schema': processor.NanoAODSchema,
+                                            'config': None,
+                                        },
+                                        chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
+                                        )
         elif 'condor' in config.run_options['executor']:
             #xfer_files = [process_worker_pool, _x509_path]
             #print(xfer_files)

@@ -15,7 +15,7 @@ cfg =  {
 
     # Input and output files
     "workflow" : "fatjet_tagger_ggHcc",
-    "input"    : "datasets/RunIIFall17EOY17_max.json",
+    "input"    : "datasets/RunIIFall17EOY17_local.json",
     "output"   : "histograms/RunIIFall17EOY17.coffea",
     "plots"    : "plots/RunIIFall17EOY17",
 
@@ -33,7 +33,7 @@ cfg =  {
         "max"            : None,
         "skipbadfiles"   : True,
         "voms"           : None,
-        # "limit"          : None,
+        "limit"          : None,
         # "limit"          : 1,
     },
 

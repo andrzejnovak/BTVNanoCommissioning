@@ -22,6 +22,8 @@ cfg =  {
     # Executor parameters
     "run_options" : {
         "executor"       : "parsl/slurm",
+        # "executor"       : "iterative",
+        # "workers"        : 10,
         "workers"        : None,
         "scaleout"       : 4,
         "partition"      : None,
@@ -33,6 +35,7 @@ cfg =  {
         "skipbadfiles"   : None,
         "voms"           : None,
         "limit"          : None,
+        # "limit"          : 1,
     },
 
     # Processor parameters
