@@ -20,6 +20,11 @@ class NanoProcessor(processor.ProcessorABC):
         self.cfg = cfg
         self._year = self.cfg['year']
         self._campaign = self.cfg['campaign']
+        self._json_paths = {
+            '2016': 'jsons/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt',
+            '2017': 'jsons/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt',
+            '2018': 'jsons/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt',
+        }
         self._mask_fatjets = {
             'basic'       : {
                 'pt_cut' : 350.,
@@ -169,6 +174,22 @@ class NanoProcessor(processor.ProcessorABC):
         sv_logsv1massratio_axis     = hist.Bin("logsv1massratio", r"log($m_{SV_1~for~max(\sigma_{d_{xy}})}$/GeV) / log($m_{SV,1~for~max(p_T)}$/GeV)", 200, -100, 100)
         sv_logsv1massres_axis     = hist.Bin("logsv1massres", r"(log($m_{SV_1~for~max(\sigma_{d_{xy}})}$/GeV) - log($m_{SV,1~for~max(p_T)}$/GeV)) / log($m_{SV,1~for~max(p_T)}$/GeV))", 100, -1, 1)
 
+        sv_dlen_axis = hist.Bin("dlen", r"SV dlen", 50, -1, 18) 
+        sv_dlenSig_axis = hist.Bin("dlenSig", r"SV dlenSig", 50, -5, 150) 
+        sv_dxy_axis = hist.Bin("dxy", r"SV dxy", 50, -1, 18) 
+        sv_dxySig_axis = hist.Bin("dxySig", r"SV dxySig", 50, -5, 150) 
+        sv_pAngle_axis = hist.Bin("pAngle", r"SV pAngle", 50, -0.1, 3.2) 
+        sv_chi2_axis = hist.Bin("chi2", r"SV chi2", 50, -0.5, 4) 
+        sv_eta_axis = hist.Bin("eta", r"SV eta", 50, -3.5, 3.5) 
+        sv_mass_axis = hist.Bin("mass", r"SV mass", 50, -0.1, 7) 
+        sv_ndof_axis = hist.Bin("ndof", r"SV ndof", 50, 0, 8) 
+        sv_phi_axis = hist.Bin("phi", r"SV phi", 50, -3.5, 3.5) 
+        sv_pt_axis = hist.Bin("pt", r"SV pt", 50, -1, 300) 
+        sv_x_axis = hist.Bin("x", r"SV x", 50, -4, 4) 
+        sv_y_axis = hist.Bin("y", r"SV y", 50, -4, 4) 
+        sv_z_axis = hist.Bin("z", r"SV z", 50, -10, 10) 
+        sv_ntracks_axis = hist.Bin("ntracks", r"SV ntracks", 8, 0, 8) 
+
         # Define similar axes dynamically
         disc_list = ["btagCMVA", "btagCSVV2", 'btagDeepB', 'btagDeepC', 'btagDeepFlavB', 'btagDeepFlavC',]
         disc_list_fj = AK8Taggers
@@ -238,6 +259,15 @@ class NanoProcessor(processor.ProcessorABC):
 
             'nd_jp': hist.Hist("Events", dataset_axis, region_axis, flavor_axis, fatjet_btagDDCvLV2_axis, fatjet_jetproba_axis),
         }
+
+        _sv_axes = [sv_dlen_axis, sv_dlenSig_axis,  sv_dxy_axis, sv_dxySig_axis, sv_pAngle_axis, sv_chi2_axis,  sv_eta_axis, sv_mass_axis,  sv_ndof_axis,
+                    sv_phi_axis, sv_pt_axis, sv_x_axis, sv_y_axis, sv_z_axis, sv_ntracks_axis]
+        _hist_nd_dict.update(dict(zip([f"nd_sv_{_sv.name}" for _sv in _sv_axes], 
+                                      [hist.Hist("Events", dataset_axis, region_axis, flavor_axis, _sv_ax) for _sv_ax in _sv_axes]
+                                      )
+                                  )
+                            )
+        
 
         for (i, disc) in enumerate(disc_list_fj):
             _hist_fatjet_dict['fatjet_' + disc] = hist.Hist("Events", dataset_axis, flavor_axis, btag_axes_fj[i])
@@ -456,6 +486,13 @@ class NanoProcessor(processor.ProcessorABC):
             else:
                 JECversion = JECversions[self._campaign][self._year]['Data'][self._sample.split('BTagMu')[1]]
 
+        from coffea.lumi_tools import LumiMask
+        if isRealData:
+            mask = LumiMask(self._json_paths[self._year])(events.run, events.luminosityBlock)
+        else: 
+            mask = np.ones(len(events), dtype='bool')
+        print("XY", np.sum(mask)/len(mask))
+        events = events[mask]
         ############
         # Basic Cleaning
         events = events[ events.PV.npvsGood>0 ]
@@ -530,9 +567,12 @@ class NanoProcessor(processor.ProcessorABC):
         ## Muon cuts
         # muon twiki: https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
         events.Muon = events.Muon[(events.Muon.pt > self.mupt)
-                                  & (abs(events.Muon.eta < 2.4)) &
-                                  (events.Muon.tightId != 1) &
-                                  (events.Muon.pfRelIso04_all > 0.15)]
+                                  & (abs(events.Muon.eta < 2.4))
+                                  & (events.Muon.tightId == 1)
+                                #   & (events.Muon.pfRelIso04_all > 0.15)
+                                  & (events.Muon.jetRelIso < 100)
+                                  & (events.Muon.jetPtRelv2 > 1)
+                                  ]
         events.Muon = ak.pad_none(events.Muon, 2, axis=1)
 
         ## Jet cuts  (not used)
@@ -586,24 +626,36 @@ class NanoProcessor(processor.ProcessorABC):
         def project(a, b):
             return a.dot(b)/b.dot(b) * b
 
+        ####
+        # import copy
+        # altsv = copy.deepcopy(events.SV)
+        # altsv['eta'] = 0.
+        # print(events.SV['mass'][:10])
+        # events.SV['mass'] = project(altsv.p4, events.SV.p4).mass
+        ####
+
         leadsv = ak.firsts(events.SV[i_maxPt])
         leadsv_dxySig = ak.firsts(events.SV[i_maxdxySig])
         leadsv['summass'] = events.SV[i_maxPt].p4.sum().mass
-        leadsv['logsummass'] = np.log(events.SV[i_maxPt].p4.sum().mass)
+        # leadsv['logsummass'] = np.log(events.SV[i_maxPt].p4.sum().mass)
+        leadsv['logsummass'] = np.log(events.SV[i_maxPt][:, :2].p4.sum().mass)
         leadsv['projmass'] = project(events.SV[i_maxPt].p4.sum(), leadfatjet).mass
-        leadsv['logprojmass'] = np.log(project(events.SV[i_maxPt].p4.sum(), leadfatjet).mass)
+        # leadsv['logprojmass'] = np.log(project(events.SV[i_maxPt].p4.sum(), leadfatjet).mass)
+        leadsv['logprojmass'] = np.log(project(events.SV[i_maxPt][:, :2].p4.sum(), leadfatjet).mass)
         leadsv['sv1mass'] = leadsv.p4.mass
         leadsv['logsv1mass'] = np.log(leadsv.p4.mass)
         corrmass = np.sqrt(events.SV[i_maxPt].p4.mass**2 + events.SV[i_maxPt].p4.pt**2 * np.sin(events.SV[i_maxPt].pAngle)**2) + events.SV[i_maxPt].p4.pt * np.sin(events.SV[i_maxPt].pAngle)
         sv_pt_sorted = events.SV[i_maxPt]
         sv_pt_sorted['mass'] = corrmass
-        leadsv['logsumcorrmass'] = np.log(sv_pt_sorted.p4.sum().mass)
+        # leadsv['logsumcorrmass'] = np.log(sv_pt_sorted.p4.sum().mass)
+        leadsv['logsumcorrmass'] = np.log(sv_pt_sorted[:, :2].p4.sum().mass)
         leadsv['sv1mass_maxdxySig'] = leadsv_dxySig.p4.mass
         leadsv['logsv1mass_maxdxySig'] = np.log(leadsv_dxySig.p4.mass)
         leadsv['logsv1massratio'] = leadsv['logsv1mass_maxdxySig'] / leadsv['logsv1mass']
         leadsv['logsv1massres'] = (leadsv['logsv1mass_maxdxySig'] - leadsv['logsv1mass']) / leadsv['logsv1mass']
 
         fatjet_mutag = (leadfatjet.nmusj1 >= 1) & (leadfatjet.nmusj2 >= 1)
+        cuts.add( 'pt_rat', ak.to_numpy(((leadmuonsj1 + leadmuonsj2).pt / leadfatjet.pt ) < 0.6))
         cuts.add( 'fatjet_mutag', ak.to_numpy(fatjet_mutag) )
         cuts.add( 'fatjet_mutag_inv', ak.to_numpy(~fatjet_mutag) )
 
@@ -697,15 +749,15 @@ class NanoProcessor(processor.ProcessorABC):
 
         selection = {}
         selection['basic'] = { 'basic' }
-        selection['msd100tau06'] = { 'trigger', 'fatjet_mutag', 'msd100tau06' }
-        selection['msd100tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd100tau06ggHcc' }
+        selection['msd100tau06'] = { 'trigger', 'fatjet_mutag', 'pt_rat',  'msd100tau06' }
+        selection['msd100tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'pt_rat', 'msd100tau06ggHcc' }
         
-        selection['msd60tau06'] = { 'trigger', 'fatjet_mutag', 'msd60tau06' }
-        selection['msd60tau06alg'] = { 'trigger_algo', 'fatjet_mutag', 'msd60tau06' }
-        selection['msd60tau06nlg'] = { 'trigger_noalgo', 'fatjet_mutag', 'msd60tau06' }
-        selection['msd60tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd60tau06ggHcc' }
-        selection['msd60tau06inv'] = { 'trigger', 'fatjet_mutag_inv', 'msd60tau06' }
-        selection['msd60tau06ggHccinv'] = { 'trigger', 'fatjet_mutag_inv', 'msd60tau06ggHcc' }
+        selection['msd60tau06'] = { 'trigger', 'fatjet_mutag', 'pt_rat', 'msd60tau06' }
+        selection['msd60tau06alg'] = { 'trigger_algo', 'fatjet_mutag', 'pt_rat', 'msd60tau06' }
+        selection['msd60tau06nlg'] = { 'trigger_noalgo', 'fatjet_mutag', 'pt_rat', 'msd60tau06' }
+        selection['msd60tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'pt_rat', 'msd60tau06ggHcc' }
+        selection['msd60tau06inv'] = { 'trigger', 'fatjet_mutag_inv', 'pt_rat', 'msd60tau06' }
+        selection['msd60tau06ggHccinv'] = { 'trigger', 'fatjet_mutag_inv', 'pt_rat', 'msd60tau06ggHcc' }
 
         selection['msd40tau06'] = { 'trigger', 'fatjet_mutag', 'msd40tau06' }
         selection['msd40tau06ggHcc'] = { 'trigger', 'fatjet_mutag', 'msd40tau06ggHcc' }        
@@ -750,14 +802,18 @@ class NanoProcessor(processor.ProcessorABC):
                     fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
                     h.fill(dataset=self._sample, flavor=fl_conv_dict[flav],  **fields, weight=weight)
             if histname in self.nd_hists:
-                for _region in ['basic', 'msd100tau06', 'msd100tau06ggHcc', 
-                                'msd60tau06', 'msd60tau06ggHcc', 'msd60tau06alg','msd60tau06nlg', 
+                # for _region in ['basic', 'msd100tau06', 'msd100tau06ggHcc', 
+                #                 'msd60tau06', 'msd60tau06ggHcc', 'msd60tau06alg','msd60tau06nlg', 
+                #                 'msd60tau06inv', 'msd60tau06ggHccinv',
+                #                 'msd40tau06', 'msd40tau06ggHcc']:
+                for _region in ['basic',
+                                'msd60tau06', 'msd60tau06ggHcc', 
                                 'msd60tau06inv', 'msd60tau06ggHccinv',
-                                'msd40tau06', 'msd40tau06ggHcc']:
+                                ]:
                     weight = weights.weight() * cuts.all(*selection[_region])
-                    fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in dir(leadsv) }
-                    fields.update(**{k: ak.fill_none(leadfatjet[k], -9999) for k in h.fields if k in dir(leadfatjet)})
-                    # print("X", fields)
+                    sv_fields = {k: ak.fill_none(leadsv[k], -9999) for k in h.fields if k in leadsv.fields }
+                    jet_fields = {k: ak.fill_none(leadfatjet[k], -9999) for k in h.fields if k in leadfatjet.fields}
+                    fields = {**jet_fields, **sv_fields} # order matters, sv.mass overwrites jet.mass
                     h.fill(dataset=self._sample, **fields, region=_region, weight=weight)
 
         #if isRealData & (self.checkOverlap is not None):

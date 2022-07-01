@@ -139,7 +139,7 @@ if __name__ == '__main__':
                             launcher=SrunLauncher(),
                             max_blocks=1,
                             init_blocks=1,
-                            partition='all',
+                            partition=config.run_options['partition'],
                             # scheduler_options=sched_opts,   # Enter scheduler_options if needed
                             worker_init="\n".join(env_extra) + "\nexport PYTHONPATH=$PYTHONPATH:$PWD", 
                             walltime='03:00:00'
@@ -157,9 +157,13 @@ if __name__ == '__main__':
                                             'skipbadfiles':True,
                                             'schema': processor.NanoAODSchema,
                                             'config': None,
+                                            'merging': True,
+                                            'merges_executors': ['merges'],
+                                            'jobs_executors': ['jobs'],
                                         },
                                         chunksize=config.run_options['chunk'], maxchunks=config.run_options['max']
                                         )
+
         elif 'condor' in config.run_options['executor']:
             #xfer_files = [process_worker_pool, _x509_path]
             #print(xfer_files)
