@@ -1,8 +1,8 @@
 import sys
-#from PocketCoffea.PocketCoffea.parameters.cuts.baseline_cuts import passthrough
 from PocketCoffea.parameters.cuts.baseline_cuts import passthrough
+# from PocketCoffea.parameters.cuts.baseline_cuts import passthrough
 from config.fatjet_base.custom_cuts import mutag_presel, get_ptbin, get_ptmsd
-#from PocketCoffea.PocketCoffea.lib.cut_functions import get_nObj
+# from PocketCoffea.PocketCoffea.lib.cut_functions import get_nObj
 from PocketCoffea.lib.cut_functions import get_nObj
 from config.fatjet_base.functions import get_tagger_passfail, get_exclusive_wp
 from workflows.fatjet_base import fatjetBaseProcessor
@@ -16,7 +16,8 @@ wp = AK8TaggerWP['UL']['2018']
 cfg =  {
 
     "dataset" : {
-        "jsons": ["datasets/MC_QCD_MuEnriched_local.json", "datasets/DATA_BTagMu_local.json", ],
+        "jsons": ["datasets/MC_QCD_MuEnriched_locald.json", "datasets/DATA_BTagMu_locald.json", ],
+        # "jsons": ["datasets/RunIISummer20UL18_local.json"],
         "filter" : {
             "samples": ["QCD_Pt-170to300", "QCD_Pt-300to470", "QCD_Pt-470to600", "QCD_Pt-600to800", "QCD_Pt-800to1000", "QCD_Pt-1000toInf", "DATA"],
             "samples_exclude" : [],
@@ -32,20 +33,21 @@ cfg =  {
 
     # Executor parameters
     "run_options" : {
-        "executor"       : "dask/slurm",
-        "workers"        : 1,
-        "scaleout"       : 175,
-        "partition"      : "standard",
+        "executor"       : "parsl/slurm",
+        # "executor"       : "iterative",
+        # "workers"        : 1,
+        "scaleout"       : 6,
+        "partition"      : None,
         "walltime"       : "12:00:00",
-        "mem_per_worker" : "8GB", # GB
+        "mem_per_worker" : None, # GB
         "exclusive"      : False,
-        "chunk"          : 50000,
-        "retries"        : 30,
-        "treereduction"  : 10,
+        "chunk"          : 200000,
+        "retries"        : 10,
+        # "treereduction"  : 10,
         "max"            : None,
         "skipbadfiles"   : None,
         "voms"           : None,
-        "limit"          : None,
+        "limit"          : 2,
     },
 
     # Cuts and plots settings
@@ -172,7 +174,22 @@ cfg =  {
         "nfatjet" : None,
         "nsv" : {'binning' : {'n_or_arr' : 20, 'lo' : 0, 'hi' : 20},    'xlim' : (0,20),   'xlabel' : "$N_{SV}$"},
     },
-    "variables2d" : {},
+    "variables2d": {
+        'nd_logsumcorrmass_DDBvL': {
+            'sv_logsumcorrmass': {
+                'binning': {'n_or_arr' : 50, 'lo' : -1.2, 'hi' : 4.8},   
+                'xlim' : (-1.2,4.8),
+                'xlabel': "Electron $p_{T}$ [GeV]",
+                # 'xticks': [20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500]
+                },
+            'leadfatjet_btagDDBvLV2': {
+                'binning': {'n_or_arr' : 50, 'lo' : 0, 'hi' : 1},
+                'ylim': (0, 1), 
+                'ylabel': "DDBvLV2"
+                },
+        },
+        
+    },
     "plot_options" : {
         #"sum_over" : ['cat', 'year', 'flavor'],
         "sum_over" : ['cat', 'year', 'sample'],

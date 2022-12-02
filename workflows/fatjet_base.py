@@ -1,7 +1,7 @@
 import os
 import sys
 #print(sys.path)
-PATH_TO_MODULE = "/work/mmarcheg/BTVNanoCommissioning/PocketCoffea"
+PATH_TO_MODULE = "/home/anovak/BTVNanoCommissioning/PocketCoffea"
 if not PATH_TO_MODULE in sys.path:
     sys.path.append(PATH_TO_MODULE)
 
@@ -112,6 +112,7 @@ class fatjetBaseProcessor(processor.ProcessorABC):
             self._hist_dict[f'hist_{var_name}'] = hist.Hist("$N_{events}$", self._sample_axis,
                                                             self._cat_axis, self._year_axis, self._flavor_axis, variable_axis)
         for hist2d_name in self._variables2d.keys():
+            print("AAA", hist2d_name)
             varname_x = list(self._variables2d[hist2d_name].keys())[0]
             varname_y = list(self._variables2d[hist2d_name].keys())[1]
             variable_x_axis = hist.Bin(varname_x, self._variables2d[hist2d_name][varname_x]['xlabel'],
@@ -130,6 +131,7 @@ class fatjetBaseProcessor(processor.ProcessorABC):
         self.jet_hists = [histname for histname in self._hist_dict.keys() if 'jet' in histname and not 'fatjet' in histname and not histname in self.nobj_hists]
         self.fatjet_hists = [histname for histname in self._hist_dict.keys() if 'fatjet' in histname and not histname in self.nobj_hists]
         self.sv_hists = [histname for histname in self._hist_dict.keys() if 'sv' in histname and not histname in self.nobj_hists]
+        self.nd_hists = [histname for histname in self._hist2d_dict.keys()]
         # The final accumulator dictionary is built when the accumulator() property is called for the first time.
         # Doing so, subclasses can add additional context to the self._accum_dict. 
         # self._accumulator = dict_accumulator(self._accum_dict)
@@ -410,6 +412,8 @@ class fatjetBaseProcessor(processor.ProcessorABC):
             fill_histograms_object_with_flavor(self, obj, obj_hists, event_var=True, pt_reweighting=self._pt_reweighting)
         for (obj, obj_hists) in zip([self.events.MuonGood, self.events.ElectronGood, self.events.JetGood], [self.muon_hists, self.electron_hists, self.jet_hists]):
             fill_histograms_object_with_flavor(self, obj, obj_hists, pt_reweighting=self._pt_reweighting)
+        fill_histograms_object_with_flavor(self, self.events.SVLeading, self.sv_hists, event_var=True, pt_reweighting=self._pt_reweighting)
+        
 
     def count_events(self):
         # Fill the output with the number of events and the sum of their weights in each category for each sample
